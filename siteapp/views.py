@@ -146,6 +146,7 @@ def project(request, project_id=None):
         "project_has_members_besides_me": project and project.members.exclude(user=request.user),
         "project": project,
         "title": project.title if project else "System Account",
+        "notes": project.notes if project else None,
         "tasks": Task.get_all_tasks_readable_by(request.user).filter(editor=request.user, project=project),
         "others_tasks": Task.get_all_tasks_readable_by(request.user).filter(project=project).exclude(editor=request.user),
     }

@@ -32,12 +32,31 @@ ul {
     column-gap: 30px;
     list-style-type: none;
 }
+
+.module_box {
+  border: 3px solid green; 
+  width:110px;
+  height: 120px; 
+  padding:4px;
+  text-align:center;
+  margin-right: 20px;
+  float: left;
+}
+
+section {
+    width: 100%;
+    height: 120px;
+    margin: auto;
+    padding: 10px;
+}
+
 </style>
 {% endblock %}
 
 {% block body %}
 <div style="margin-bottom: 2em">
   <h1 style="margin: 1em 0 0 0">{{title}}</h1>
+  <p>{{notes}}</p>
 
   {% if project_has_members_besides_me %}
   <div class="admins small" style="margin-top: 3px">
@@ -62,6 +81,93 @@ ul {
   {% endfor %}
   </div>
 {% endif %}
+
+<!-- tab design -->
+<div>
+  <ul id="finished-tabs" class="nav nav-tabs" role="tablist">
+    
+      <li role="presentation" class="active for-output-document"><a href="#document-1" aria-controls="document-1" role="tab" data-toggle="tab">Basic Info</a></li>
+    
+      <li role="presentation" class=" for-output-document"><a href="#document-2" aria-controls="document-2" role="tab" data-toggle="tab">Who's Who?</a></li>
+    
+    <li role="presentation"><a href="#questions" aria-controls="questions" role="tab" data-toggle="tab">Policies</a></li>
+    <li role="presentation"><a href="#team" aria-controls="team" role="tab" data-toggle="tab">Team</a></li>
+  </ul>
+
+  <!-- Tab panes -->
+  <div id="finished-tabs-panels" class="tab-content">
+    
+      <div role="tabpanel" class="tab-pane active output-document" id="document-1">
+          <p>Welcome! In this section, we'll guide you through organizing basic information about your system.</p>
+          <br /><br />
+
+          <section>
+          <div class="module_box">
+            <p>Big<br/>Picture</p>
+            <h4><span class="glyphicon glyphicon-picture"></span></h4>
+            <a href="">start</a>
+            or <a href="">invite</a>
+          </div>
+
+          <div class="module_box">
+            <p>Online Hosting</p>
+            <h4><span class="glyphicon glyphicon-cloud-upload"></span></h4>
+            <a href="">start</a>
+            or <a href="">invite</a>
+          </div>
+
+          <div class="module_box">
+            <p>Module <br>3</p>
+            <h4><span class="glyphicon glyphicon-picture"></span></h4>
+            <a href="">start</a>
+            or <a href="">invite</a>
+          </div>
+          </section>
+</ul>
+
+      </div>
+    
+      <div role="tabpanel" class="tab-pane  output-document" id="document-2">
+          <p>Let's organize your project's Points of Contacts.</p>
+
+      </div>
+    
+
+    <div role="tabpanel" class="tab-pane" id="questions">
+        <p>Policies and procedures are guard rails for reducing problems. What are yours?</p>     
+    </div>
+
+    <div role="tabpanel" class="tab-pane" id="team">
+        <p>The {{title}} team</p>     
+    </div>
+  </div>
+
+</div>
+
+<style>
+#finished-tabs-panels .tab-pane {
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  padding: 30px 15px;
+}
+
+.tab-pane {
+  min-height: 400px;
+}
+
+.output-document {
+  background-color: #FBF6F4;
+  color: black;
+}
+#finished-tabs .active.for-output-document a {
+  background-color: #FBF6F4;
+}
+</style>
+
+<hr>
+<!-- / end tab desgin -->
+
 
 {% if tasks or can_begin_module %} {# dont show if no permission to start a module #}
 <h2>
