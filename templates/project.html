@@ -22,6 +22,16 @@
   .task.deleted .delete-task:after {
     content: "(undo)";
   }
+
+ul {
+    -moz-column-count: 2;
+    -moz-column-gap: 30px;
+    -webkit-column-count: 2;
+    -webkit-column-gap: 30px;
+    column-count: 2;
+    column-gap: 30px;
+    list-style-type: none;
+}
 </style>
 {% endblock %}
 
@@ -91,9 +101,8 @@
 
 {% if can_begin_module %}
   {# can only start a new module within a project you are the admin of #}
-  <hr>
 
-  <form class="form-inline" method="post" action="/tasks/start" onsubmit="if ($('#start-module-{{project.id}}').val() == '') { alert('Select a module.'); return false; }">
+  <!--form class="form-inline" method="post" action="/tasks/start" onsubmit="if ($('#start-module-{{project.id}}').val() == '') { alert('Select a module.'); return false; }">
     <input type="hidden" name="project" value="{{project.id}}"/>
     {% csrf_token %}
     <div class="form-group" style="margin-right: 1em">
@@ -113,7 +122,27 @@
       <button type="submit" class="btn btn-primary">Start Module</button>
       <button class="btn btn-warning" onclick="return invite_user_to_start_module(project_invitation_info_{{project.id}});">Invite to Answer ...</button>
     </div>
-  </form>
+  </form-->
+
+  <hr>
+  <h2>Available modules</h2>
+  <p>Start a module or invite a colleague to start a module</p>
+  <ul>
+    {% for m in startable_modules %}
+    <li><form class="form-inline" method="post" action="/tasks/start" onsubmit="">
+      <input type="hidden" name="project" value="{{project.id}}"/>
+      {% csrf_token %}
+      <input type="hidden" id="start-module-{{project.id}}" class="form-control" name="module" value="{{m.id}}">
+      <script>var project_invitation_info_{{project.id}} = {{send_invitation|safe}};</script>
+      <button type="submit" class="btn btn-link" style="width:180px;text-align:left;">{{m.title}}</button>
+      <button class="btn btn-link" onclick="return invite_user_to_start_module(project_invitation_info_{{project.id}});"><span class="glyphicon glyphicon-envelope"></span></button>
+    </form>
+  </li>
+  {% endfor %}
+  </ul>
+
+
+
 {% endif %}
 
 {% endblock %}
