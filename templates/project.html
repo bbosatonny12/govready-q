@@ -115,28 +115,23 @@
   {{intro|safe}}
 </div>
 
-    <ul id="project-tabs" class="nav nav-tabs">
-      {# question tabs #}
-      {% for tab in tabs %}
-        <li role="presentation" {% if forloop.first %}class="active"{% endif %}><a href="#{{tab.title|slugify}}" aria-controls="{{forloop.counter}}-{{tab.title|slugify}}" role="tab" data-toggle="tab">{{tab.title}}</a></li>
-      {% endfor %}
+<hr />
+<div id="accordion" class="panel-group" role="tablist" aria-multiselectable="true">
+  {# module groups #}
 
-      {# output document tabs #}
-      {% for document in additional_tabs %}
-        <li role="presentation"><a href="#document-{{forloop.counter}}" aria-controls="document-{{forloop.counter}}" role="tab" data-toggle="tab">{{document.title}}</a></li>
-      {% endfor %}
+  {# previously called "tabs" #}
+  {% for tab in tabs %}
+    <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="document-{{forloop.counter}}-title">
+        <h4 class="panel-title">
+          <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{forloop.counter}}-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-{{forloop.counter}}-body">
+            {{tab.title}}
+          </a>
+        </h4>
+      </div>
+      <div id="document-{{forloop.counter}}-body" class="panel-collapse collapse {% if forloop.first %}in{% endif %}" role="tabpanel" aria-labelledby="document-{{forloop.counter}}-title">
+        <div class="panel-body output-document">
 
-      {% if not project.is_account_project %}
-        <li role="presentation"><a href="#project-settings" aria-controls="project-settings" role="tab" data-toggle="tab"><i class="glyphicon glyphicon-wrench"></i> Settings</a></li>
-      {% endif %}
-
-    </ul>
-
-    <div class="tab-content">
-      {# question tabs #}
-
-      {% for tab in tabs %}
-        <div role="tabpanel" class="tab-pane {% if forloop.first %}active{% endif %}" id="{{tab.title|slugify}}">
             {{tab.intro.html|safe}}
 
             {% for group in tab.groups.values %}
@@ -224,18 +219,23 @@
               </div> <!-- /row -->
               </div> <!-- /task-group -->
             {% endfor %}
-        </div>
-      {% endfor %}
 
-      {# output document tabs #}
-      {% for document in additional_tabs %}
-        <div role="tabpanel" class="tab-pane" id="document-{{forloop.counter}}">
-            {{document.html|safe}}
         </div>
-      {% endfor %}
+      </div>
+    </div>
 
-    {% if not project.is_account_project %}
-    <div role="tabpanel" class="tab-pane" id="project-settings">
+  {% endfor %}
+
+    <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="document-{{forloop.counter}}-title">
+        <h4 class="panel-title">
+          <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{forloop.counter}}-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-{{forloop.counter}}-body">
+            <i class="glyphicon glyphicon-wrench"></i> Settings
+          </a>
+        </h4>
+      </div>
+      <div id="document-{{forloop.counter}}-body" class="panel-collapse collapse {% if forloop.first %}in{% endif %}" role="tabpanel" aria-labelledby="document-{{forloop.counter}}-title">
+        <div class="panel-body output-document">
 
       <h1>Settings</h1>
 
@@ -287,13 +287,13 @@
           </div>
         </div>
 
-    </div> <!-- /tab-panel -->
-    {% endif %}
 
+        </div>
+      </div>
     </div>
-  </div>
 </div>
 
+<!-- Are these extra divs? -->
   </div>
 </div>
 {% endblock %}
