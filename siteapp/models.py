@@ -88,6 +88,24 @@ class Organization(models.Model):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        # Return a URL with a hostname. That's unusual.
+        #
+        # The settings.SITE_ROOT_URL tells us the scheme and domain of the main Q landing site.
+        # (In testing it's http://localhost; in production it's https://q.govready.com.)
+        # The invitation must be sent using the subdomain of the organization it is
+        # a part of.
+        # (also see Invitation)
+        import urllib.parse
+        s = urllib.parse.urlsplit(settings.SITE_ROOT_URL)
+        return urllib.parse.urlunsplit((
+            s[0], # scheme
+            self.subdomain + '.' + s[1], # host
+            '', # path
+            '', # query
+            '' # fragment
+            ))
+
     def can_read(self, user):
         # A user can see an Organization when they have read permission on
         # any Project within the Organization or are a guest in any Discussion

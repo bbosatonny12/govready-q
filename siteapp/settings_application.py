@@ -18,6 +18,9 @@ MIDDLEWARE_CLASSES += [
 
 AUTHENTICATION_BACKENDS += ['siteapp.models.DirectLoginBackend']
 
+# Allow subdomains.
+ALLOWED_HOSTS += ['.' + ALLOWED_HOSTS[0]]
+
 SERVER_EMAIL = "GovReady Q <q@mg.govready.com>"
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
 

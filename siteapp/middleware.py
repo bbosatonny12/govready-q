@@ -17,6 +17,12 @@ class OrganizationSubdomainMiddleware:
         # a HOST:PORT.
         request_host = request.get_host().split(":")[0]
 
+        # When debugging, the Django runserver server uses this host.
+        # But we can't do subdomains on that hostname. As a convenience,
+        # redirect to "localhost".
+        if settings.DEBUG and request_host == "127.0.0.1":
+            return HttpResponseRedirect("http://localhost:" + request.get_port() + request.path)
+
         for top_domain in settings.ALLOWED_HOSTS:
             # The ALLOWED_HOSTS domain might start with a '.' to indicate
             # it allows all subdomains. Strip that off.
