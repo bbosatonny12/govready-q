@@ -30,7 +30,7 @@ h1 a:hover span.glyphicon { text-decoration: none; }
 <div id="project-name">
   {% if task.project %}
     <h1>
-      <a href="{{task.project.get_absolute_url}}">
+      <a href="{{task.project.get_absolute_system_url}}">
         <span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span>
         <span>{{task.project.title}}</span>
       </a>

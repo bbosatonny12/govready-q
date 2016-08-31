@@ -16,6 +16,8 @@ urlpatterns = [
     url(r'^new-project$', views.new_project),
     url(r'^projects/(\d+)/_delete$', views.delete_project, name="delete_project"),
     url(r'^projects/(\d+)/(?:[\w\-]+)$', views.project),
+    # systems
+    url(r'^systems/(\d+)/(?:[\w\-]+)$', views.system),
 
     # invitations
     url(r'^invitation/_send$', views.send_invitation, name="send_invitation"),

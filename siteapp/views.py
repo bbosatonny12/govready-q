@@ -259,6 +259,32 @@ def project(request, project_id):
         "tabs": list(tabs.values()),
     })
 
+@login_required
+def system(request, project_id):
+    project = get_object_or_404(Project, id=project_id, organization=request.organization)
+
+    # Check authorization.
+    if not project.has_read_priv(request.user):
+        return HttpResponseForbidden()
+
+    # Redirect if slug is not canonical. We do this after checking for
+    # read privs so that we don't reveal the task's slug to unpriv'd users.
+#    if request.path != project.get_absolute_url():
+#        return HttpResponseRedirect(project.get_absolute_url())
+
+    # Get the project team members.
+    project_members = ProjectMembership.objects.filter(project=project)
+    is_project_member = project_members.filter(user=request.user).exists()
+
+    return render(request, "system.html", {
+        "is_admin": request.user in project.get_admins(),
+        "is_member": is_project_member,
+        "can_begin_module": project.can_start_task(request.user),
+        "project_has_members_besides_me": project and project.members.exclude(user=request.user),
+        "project": project,
+        "title": project.title,
+        "project_members": sorted(project_members, key = lambda mbr : (not mbr.is_admin, str(mbr.user))),
+    })
 
 @login_required
 @require_http_methods(["POST"])

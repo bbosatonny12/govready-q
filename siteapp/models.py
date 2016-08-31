@@ -182,6 +182,10 @@ class Project(models.Model):
         from django.utils.text import slugify
         return "/projects/%d/%s" % (self.id, slugify(self.title))
 
+    def get_absolute_system_url(self):
+        from django.utils.text import slugify
+        return "/systems/%d/%s" % (self.id, slugify(self.title))
+
     def get_members(self):
         return User.objects.filter(projectmembership__project=self)
 

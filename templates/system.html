@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% load q %}
+
+{% block title %}
+{{title}}
+{% endblock %}
+
+{% block head %}
+<style>
+.tab-pane {
+  padding-top: 1.5em;
+}
+
+/* TODO: Move into side-wide stylesheet. The !important is here
+   because something on hover is canceling out the border. */
+.nav-tabs>li.active>a {
+  font-weight: bold;
+  border-top: 3px solid rgb(19,144,50) !important;
+}
+
+.task-group {
+  margin: 1.5em 0;
+  padding: 1em;
+  border: 1px solid rgb(200,200,200);
+  border-radius: 4px;
+  background-color: #FFF;
+}
+
+.task-group-title {
+  margin: -1em -1em 0 -1em;
+  font-weight:bold;
+  background-color:rgb(230,230,230);
+  border-bottom:1px solid rgb(200,200,200);
+  padding: 8px 18px;
+}
+
+.task {
+  border: 1px solid rgb(200,200,200);
+  border-radius: 4px;
+  background-color: rgb(240,240,240);
+  padding: 1em;
+  margin-top: 1em;
+  text-align:center;
+}
+
+  .task .task-title {
+    margin-bottom: .25em;
+    text-align: center;
+    font-weight: bold;
+    color: #666;
+  }
+  .task .task-commands a {
+    display: inline-block;
+    padding: 0 .25em;
+  }
+  .task .invitation {
+    font-size: 14px;
+    line-height: 128%;
+  }
+  .task .task-item {
+    margin: .5em 0;
+  }
+
+.task.deleted span {
+  color: #DDD;
+  text-decoration: line-through;
+}
+.task .delete-task {
+	display: none;
+	color: #F66;
+	cursor: pointer;
+  text-decoration: none;
+}
+	.task:hover .delete-task {
+		display: inline;
+	}
+  .task.deleted .delete-task:after {
+    content: "(undo)";
+  }
+
+.task_finished {
+  background-color: #dfd;
+  {% comment %}
+  /*background-image: url({% static "/img/icons/check-small.png" %});
+  background-repeat: no-repeat;
+  background-position: center;*/
+  {% endcomment %}
+}
+
+.task img {
+  position: absolute;
+  left: 50px;
+  top: 30px;
+    opacity: 0.4;
+}
+
+#project-members .admin {
+  font-style: italic;
+  font-size: 85%;
+}
+#project-members .you {
+  font-weight: bold;
+  font-size: 85%;
+}
+
+.item-box {
+  display: inline-block;
+  width: 240px;
+  height: 100px;
+  border: 0px solid #ddd;
+  margin: 0px 36px 12px 0px;
+}
+
+.item-box img {
+  width:60px;
+  height:60px;
+  vertical-align: top;
+  float: left;
+  margin-right: 4px;
+}
+
+
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+  <div class="col-sm-push-1 col-sm-9">
+
+<h1 style="margin: 1em 0 0 0;color: #666;"><span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span> {{title}}</h1>
+
+<div style="margin: 2em 0">
+  {{intro|safe}}
+</div>
+
+<div class="item-box">
+  <img src="/static/img/icons/people.png">
+  <b>People</b>
+  <br>Who does what
+</div>
+
+<div class="item-box">
+  <img src="/static/img/icons/data.png">
+  <b>Data</b>
+  <br>What info stored
+</div>
+
+<div class="item-box">
+  <img src="/static/img/icons/stats.png">
+  <b>Stats & Reports</b>
+  <br>How are we doing
+</div>
+
+<div class="item-box">
+  <img src="/static/img/icons/policies.png">
+  <b>Policies</b>
+  <br>Why we do what we do
+</div>
+
+<div class="item-box">
+  <form class="start-task" method="post" action="/tasks/start" style="display:inline;">
+  <img src="/static/img/icons/physical_location.png">
+  <a href="#" onclick="$(this).parent('form').submit(); return false;"><b>Physical Location</b></a>
+  <br>Where the servers are
+    {% csrf_token %}
+  <input type="hidden" name="project" value="{{project.id}}"/>
+  <input type="hidden" name="question" value="controlfam_sc_orgmicro_webmed"/>
+  </form>
+</div>
+
+<div class="item-box">
+  <form class="start-task" method="post" action="/tasks/start" style="display:inline;">
+  <img src="/static/img/icons/technology.png">
+  <a href="#" onclick="$(this).parent('form').submit(); return false;"><b>Technology</b></a>
+  <br>Tools in use
+    {% csrf_token %}
+  <input type="hidden" name="project" value="{{project.id}}"/>
+  <input type="hidden" name="question" value="system_stack"/>
+  </form>
+</div>
+
+
+
+  </div>
+</div>
+
+{% endblock %}
