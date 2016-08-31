@@ -1,0 +1,322 @@
+  {% extends "base.html" %}
+{% load q %}
+
+{% block title %}
+{{title}}
+{% endblock %}
+
+{% block head %}
+<style>
+.tab-pane {
+  padding-top: 1.5em;
+}
+
+/* TODO: Move into side-wide stylesheet. The !important is here
+   because something on hover is canceling out the border. */
+.nav-tabs>li.active>a {
+  font-weight: bold;
+  border-top: 3px solid rgb(19,144,50) !important;
+}
+
+.task-group {
+  margin: 1.5em 0;
+  padding: 1em;
+  border: 1px solid rgb(200,200,200);
+  border-radius: 4px;
+  background-color: #FFF;
+}
+
+.task-group-title {
+  margin: -1em -1em 0 -1em;
+  font-weight:bold;
+  background-color:rgb(230,230,230);
+  border-bottom:1px solid rgb(200,200,200);
+  padding: 8px 18px;
+}
+
+.task {
+  border: 1px solid rgb(200,200,200);
+  border-radius: 4px;
+  background-color: rgb(240,240,240);
+  padding: 1em;
+  margin-top: 1em;
+  text-align:center;
+}
+
+  .task .task-title {
+    margin-bottom: .25em;
+    text-align: center;
+    font-weight: bold;
+    color: #666;
+  }
+  .task .task-commands a {
+    display: inline-block;
+    padding: 0 .25em;
+  }
+  .task .invitation {
+    font-size: 14px;
+    line-height: 128%;
+  }
+  .task .task-item {
+    margin: .5em 0;
+  }
+
+.task.deleted span {
+  color: #DDD;
+  text-decoration: line-through;
+}
+.task .delete-task {
+	display: none;
+	color: #F66;
+	cursor: pointer;
+  text-decoration: none;
+}
+	.task:hover .delete-task {
+		display: inline;
+	}
+  .task.deleted .delete-task:after {
+    content: "(undo)";
+  }
+
+.task_finished {
+  background-color: #dfd;
+  {% comment %}
+  /*background-image: url({% static "/img/icons/check-small.png" %});
+  background-repeat: no-repeat;
+  background-position: center;*/
+  {% endcomment %}
+}
+
+.task img {
+  position: absolute;
+  left: 50px;
+  top: 30px;
+    opacity: 0.4;
+}
+
+#project-members .admin {
+  font-style: italic;
+  font-size: 85%;
+}
+#project-members .you {
+  font-weight: bold;
+  font-size: 85%;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+  <div class="col-sm-push-1 col-sm-9">
+
+<h1>
+  <a href="{{project.get_absolute_system_url}}" style="color:rgb(102,102,102)">
+    <span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span>
+    <span style="color:rgb(102,102,102)">{{task.project.title}} {{title}}</span> 
+  </a>
+  <span style="color:rgb(102,102,102)"> - {{topic|title}}</span> 
+</h1>
+
+<div style="margin: 2em 0">
+  {{intro|safe}}
+</div>
+
+
+{% for tab in tabs %}
+
+  {% if tab.title|upper == topic|upper %}
+
+    {% for group in tab.groups.values %}
+            <div class="task-group">
+              <div class="task-group-title">{{group.title}}</div>
+
+              <div class="row">
+              {% for rec in group.modules %}
+                {% if forloop.counter0|divisibleby:4 %}
+                  <div class="clearfix visible-sm-block"></div>
+                  <div class="clearfix visible-md-block"></div>
+                  <div class="clearfix visible-lg-block"></div>
+                {% endif %}
+
+                <div class="col-sm-12">
+                <div id="question-{{rec.question.key}}" class="task {% if is_member and rec.is_finished %}task_finished{% endif %}">
+
+                  <div class="task-title">
+                    {{rec.question.spec.title}}
+
+                  </div>
+                  <div>
+                    {% if is_member %}
+                      {% for t in rec.tasks %}
+                        <div class="task-item">
+                            {% if rec.question.spec.type == "module-set" %}
+                              {{t.render_title}} &mdash;
+                            {% endif %}
+                            <a href="{{t.get_absolute_url}}">
+                            {% if t.is_finished %}
+                                <span class="glyphicon glyphicon-check"></span>
+                                Done
+                            {% elif t.is_started %}
+                                <span class="glyphicon glyphicon-edit"></span>
+                              Continue
+                            {% else %}
+                              <span class="glyphicon glyphicon-edit"></span>
+                              Continue
+                            {% endif %}
+                            </a>
+                          <!-- </a> -->
+                        </div>
+                      {% endfor %}
+
+                      {% if can_begin_module and rec.can_start_new_task %}
+                      <div class="task-commands">
+                        <form class="start-task" method="post" action="/tasks/start" style="display:inline;">
+                          {% csrf_token %}
+                          <input type="hidden" name="project" value="{{project.id}}"/>
+                          <input type="hidden" name="question" value="{{rec.question.key}}"/>
+                          <a href="#" onclick="$(this).parent('form').submit(); return false;">
+                            {% if rec.tasks|length == 0 %}
+                              <span class="glyphicon glyphicon-unchecked"></span> Start
+                            {% else %}
+                              <span class="glyphicon glyphicon-unchecked"></span> Start
+                            {% endif %}
+                          </a>
+                        </form>
+                        <a href="#" class="assign-task" onclick="return invite_user_to_start_module('{{rec.module.title|escapejs}}', {{rec.question.id}});"><span class="glyphicon glyphicon-share"></span> Assign</a>
+                      </div> <!-- /task-commands -->
+                      {% endif %}
+                    {% endif %}
+
+                    {% for inv in rec.invitations %}
+                      <p class="invitation" data-invitation-id="{{inv.id}}">
+                        You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
+                        (<a href="#" onclick="return cancel_invitation(this);">cancel</a>)
+                      </p>
+                    {% endfor %}
+
+                      {# guest participation in discussions within this task #}
+                      {% if rec.discussions %}
+
+                      <div>
+                        <div><b>Discussions:</b></div>
+                        {% for d in rec.discussions %}
+                          <div><a href="{{d.get_absolute_url}}">{{d.attached_to.question.spec.title}}</a></div>
+                        {% endfor %}
+                      </div>
+                      {% endif %}
+                  </div>
+                </div> <!-- /task -->
+                </div> <!-- /col -->
+              {% endfor %}
+              </div> <!-- /row -->
+              </div> <!-- /task-group -->
+
+    {% endfor %} <!-- end % for group in tab.groups.values % -->
+
+  {% endif %} <!-- end % if tab.title|upper == topic|upper % -->
+
+{% endfor %} <!-- end % for tab in tabs % -->
+
+
+
+  </div>
+</div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+var project_invitation_info = {{send_invitation|json}};
+
+$(function() {
+  open_tab_from_url_fragment();
+  $(window).on('hashchange', open_tab_from_url_fragment);
+  $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    var tabid = e.target.getAttribute('href').substring(1); // old IE might return absolute URL here?
+    window.location.hash = "#tab=" + encodeURIComponent(tabid);
+  })
+
+	$('.task .delete-task').click(function() {
+    var task_node = $(this).parent('p');
+		var task_id = task_node.attr('data-id');
+    var task_is_deleted = task_node.hasClass('deleted');
+    ajax_with_indicator({
+     url: '{% url "task_change_state" %}',
+     method: "POST",
+     data: {
+      id: task_id,
+      state: (task_is_deleted ? 'undelete' : 'delete')
+     },
+     success: function(res) {
+       task_node.toggleClass('deleted', !task_is_deleted);
+     }
+    });
+	})
+})
+
+function invite_user_into_project() {
+  var info = project_invitation_info;
+  show_invite_modal(
+    'Invite To Project Team (' + info.project_title + ')',
+    'Invite a colleague to join this project team.',
+    info,
+    'Please join the project team for ' + info.project_title + '.',
+    {
+      project: info.project_id,
+      add_to_team: "1"
+    },
+    function() { window.location.reload() }
+  );
+
+  return false;
+}
+
+function invite_user_to_start_module(module_title, question_id) {
+  var info = project_invitation_info;
+  show_invite_modal(
+    'Start a Module (' + info.project_title + ')',
+    'Invite a colleague to answer the module ' + module_title + '.',
+    info,
+    'Can you give me a hand completing the module ' + module_title + ' for ' + info.project_title + '?',
+    {
+      project: info.project_id,
+      into_new_task_question_id: question_id
+    },
+    function() { window.location.reload() }
+  );
+
+  return false;
+}
+
+function open_tab_from_url_fragment() {
+  var tabpath = parse_qs(window.location.hash.substring(1)).tab;
+  if (tabpath) {
+    tabpath = tabpath.split('/');
+    var tab = tabpath.shift();
+    if (tab) {
+      $('#project-tabs a[href="#' + tab + '"]').tab("show");
+    }
+  }
+}
+
+function delete_project() {
+  show_modal_confirm(
+    "Delete Project",
+    "Are you sure you want to delete this project? All information will be permanently deleted.",
+    "Delete",
+    function() {
+      ajax_with_indicator({
+       url: '{% url "delete_project" project.id %}',
+       method: "POST",
+       success: function() {
+         // redirect to home to see other projects
+         window.location = "/";
+       }
+      });
+    }
+  )
+}
+</script>
+{% endblock %}

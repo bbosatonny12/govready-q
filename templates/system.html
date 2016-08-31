@@ -135,51 +135,52 @@
 
 <div class="item-box">
   <img src="/static/img/icons/people.png">
-  <b>People</b>
+  <a href="/systems/{{project.id}}/topic/people/{{project.title|slugify}}"><b>People</b></a>
   <br>Who does what
 </div>
 
 <div class="item-box">
   <img src="/static/img/icons/data.png">
-  <b>Data</b>
+  <a href="/systems/{{project.id}}/topic/data/{{project.title|slugify}}"><b>Data</b></a>
   <br>What info stored
 </div>
 
 <div class="item-box">
   <img src="/static/img/icons/stats.png">
-  <b>Stats & Reports</b>
+  <a href="/systems/{{project.id}}/topic/stats/{{project.title|slugify}}"><b>Stats &amp; Reports</b></a>
   <br>How are we doing
 </div>
 
 <div class="item-box">
   <img src="/static/img/icons/policies.png">
-  <b>Policies</b>
+  <a href="/systems/{{project.id}}/topic/policy/{{project.title|slugify}}"><b>Policy</b></a>
   <br>Why we do what we do
 </div>
 
 <div class="item-box">
-  <form class="start-task" method="post" action="/tasks/start" style="display:inline;">
   <img src="/static/img/icons/physical_location.png">
-  <a href="#" onclick="$(this).parent('form').submit(); return false;"><b>Physical Location</b></a>
+  <a href="/systems/{{project.id}}/topic/hosting/{{project.title|slugify}}"><b>Hosting</b></a>
   <br>Where the servers are
-    {% csrf_token %}
-  <input type="hidden" name="project" value="{{project.id}}"/>
-  <input type="hidden" name="question" value="controlfam_sc_orgmicro_webmed"/>
-  </form>
 </div>
 
 <div class="item-box">
-  <form class="start-task" method="post" action="/tasks/start" style="display:inline;">
+  <!--form class="start-task" method="post" action="/tasks/start" style="display:inline;"-->
   <img src="/static/img/icons/technology.png">
-  <a href="#" onclick="$(this).parent('form').submit(); return false;"><b>Technology</b></a>
+  <!--a href="#" onclick="$(this).parent('form').submit(); return false;"><b>Technology - old</b></a-->
+  <a href="/systems/{{project.id}}/topic/technology/{{project.title|slugify}}"><b>Technology</b></a>
   <br>Tools in use
-    {% csrf_token %}
-  <input type="hidden" name="project" value="{{project.id}}"/>
-  <input type="hidden" name="question" value="system_stack"/>
-  </form>
+    <!-- {% csrf_token %} -->
+  <!-- <input type="hidden" name="project" value="{{project.id}}"/> -->
+  <!-- <input type="hidden" name="question" value="system_stack"/> -->
+  <!-- </form> -->
 </div>
 
-
+<div class="item-box">
+  <!--form class="start-task" method="post" action="/tasks/start" style="display:inline;"-->
+  <img src="/static/img/icons/system_facts.png">
+  <a href="/projects/{{project.id}}/{{project.title|slugify}}#tab=project-settings"><b>Settings</b></a>
+  <br>Project settings
+</div>
 
   </div>
 </div>

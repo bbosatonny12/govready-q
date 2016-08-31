@@ -110,7 +110,7 @@ def new_project(request):
                     project=project,
                     user=request.user,
                     is_admin=True)
-            return HttpResponseRedirect(project.get_absolute_url())
+            return HttpResponseRedirect(project.get_absolute_system_url())
 
     return render(request, "new-project.html", {
         "first": not ProjectMembership.objects.filter(user=request.user).exists(),
@@ -258,6 +258,149 @@ def project(request, project_id):
         "project_members": sorted(project_members, key = lambda mbr : (not mbr.is_admin, str(mbr.user))),
         "tabs": list(tabs.values()),
     })
+
+@login_required
+def system_topic(request, project_id, topic):
+    project = get_object_or_404(Project, id=project_id, organization=request.organization)
+
+    # Check authorization.
+    if not project.has_read_priv(request.user):
+        return HttpResponseForbidden()
+
+    # Redirect if slug is not canonical. We do this after checking for
+    # read privs so that we don't reveal the task's slug to unpriv'd users.
+#    if request.path != project.get_absolute_url():
+#        return HttpResponseRedirect(project.get_absolute_url())
+
+    # Get the project team members.
+    project_members = ProjectMembership.objects.filter(project=project)
+    is_project_member = project_members.filter(user=request.user).exists()
+
+    # Get all of the discussions I'm participating in as a guest in this project.
+    # Meaning, I'm not a member, but I still need access to certain tasks and
+    # certain questions within those tasks.
+    discussions = list(project.get_discussions_in_project_as_guest(request.user))
+
+    # Pre-load the answers to project root task questions and impute answers so
+    # that we know which questions are suppressed by imputed values.
+    root_task_answers = project.root_task.get_answers()
+    root_task_answers.add_imputed_answers()
+
+    # Create all of the module entries in a tabs & groups data structure.
+    from collections import OrderedDict
+    tabs = OrderedDict()
+    question_dict = { }
+    for mq in project.root_task.module.questions.all().order_by('definition_order'):
+        # Display module/module-set questions only. Other question types in a project
+        # module are not valid.
+        if mq.spec.get("type") not in ("module", "module-set"):
+            continue
+
+        # Skip questions that are imputed.
+        if mq.key in root_task_answers.was_imputed:
+            continue
+
+        # Create the tab and group for this.
+        tabname = mq.spec.get("tab", "Modules")
+        tab = tabs.setdefault(tabname, {
+            "title": tabname,
+            "groups": OrderedDict(),
+        })
+        groupname = mq.spec.get("group", "Modules")
+        group = tab["groups"].setdefault(groupname, {
+            "title": groupname,
+            "modules": [],
+        })
+
+        # Is this question answered yet? Are there any discussions the user
+        # is a guest of in any of the tasks that answer this question?
+        is_finished = None
+        tasks = []
+        task_discussions = []
+        ans = root_task_answers.answers.get(mq.key)
+        if ans is not None:
+            if mq.spec["type"] == "module":
+                # Convert a ModuleAnswers instance ot an array containing just itself.
+                ans = [ans]
+            elif mq.spec["type"] == "module-set":
+                # ans is already a list of ModuleAnswers instances.
+                pass
+            for module_answers in ans:
+                task = module_answers.task
+                tasks.append(task)
+                task.has_write_priv = task.has_write_priv(request.user)
+                task_discussions.extend([d for d in discussions if d.attached_to.task == task])
+                if not task.is_finished():
+                    # If any task is unfinished, the whole question
+                    # is marked as unfinished.
+                    is_finished = False
+                elif is_finished is None:
+                    # If all tasks are finished, the whole question
+                    # is marked as finished.
+                    is_finished = True
+
+        # Do not display if user should not be able to see this task.
+        if not is_project_member and len(task_discussions) == 0:
+            continue
+
+        # Add entry.
+        d = {
+            "question": mq,
+            "module": mq.answer_type_module,
+            "is_finished": is_finished,
+            "tasks": tasks,
+            "can_start_new_task": mq.spec["type"] == "module-set" or len(tasks) == 0,
+            "discussions": task_discussions,
+            "invitations": [], # filled in below
+        }
+        question_dict[mq.id] = d
+        group["modules"].append(d)
+
+    # Find any open invitations and if they are for particular modules,
+    # display them with the module.
+    other_open_invitations = []
+    for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created'):
+        if inv.is_expired():
+            continue
+        if inv.target == project:
+            into_new_task_question_id = inv.target_info.get("into_new_task_question_id")
+            if into_new_task_question_id:
+                if into_new_task_question_id in question_dict: # should always be True
+                    question_dict[into_new_task_question_id]["invitations"].append(inv)
+                    continue
+
+        # If the invitation didn't get put elsewhere, display in the
+        # other list.                
+        other_open_invitations.append(inv)
+
+    # Additional tabs of content.
+    additional_tabs = []
+    if project.root_task.module.spec.get("output"):
+        for doc in project.root_task.render_output_documents(hard_fail=False):
+            if doc.get("tab") in tabs:
+                # Assign this to one of the tabs.
+                tabs[doc["tab"]]["intro"] = doc
+            else:
+                # Add tab to end.
+                additional_tabs.append(doc)
+
+    # Render.
+    return render(request, "system_topic.html", {
+        "is_admin": request.user in project.get_admins(),
+        "is_member": is_project_member,
+        "can_begin_module": project.can_start_task(request.user),
+        "project_has_members_besides_me": project and project.members.exclude(user=request.user),
+        "project": project,
+        "title": project.title,
+        "intro" : project.root_task.render_introduction() if project.root_task.module.spec.get("introduction") else "",
+        "additional_tabs": additional_tabs,
+        "open_invitations": other_open_invitations,
+        "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
+        "project_members": sorted(project_members, key = lambda mbr : (not mbr.is_admin, str(mbr.user))),
+        "tabs": list(tabs.values()),
+        "topic": topic,
+    })
+
 
 @login_required
 def system(request, project_id):

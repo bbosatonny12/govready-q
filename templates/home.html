@@ -48,7 +48,7 @@ Home
 <!-- List projects -->
 {% for project in projects %}
 <div class="project">
-  <a href="{% if project %}{{project.get_absolute_url}}{% else %}/projects/system{% endif %}">
+  <a href="{% if project %}{{project.get_absolute_system_url}}{% else %}/projects/system{% endif %}">
     <span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span>
     <span>{{project.title}}</span>
   </a>
