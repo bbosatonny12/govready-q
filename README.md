@@ -12,6 +12,8 @@ You can copy and modify from this, but _delete the comments_ before you paste it
 
 	{
 	  "debug": true, # Controls the Django DEBUG setting. Should be false in production.
+	  "host": "q.govready.com", # domain of main landing site
+	  "organization-parent-domain": "govready.com", # parent domain of organization subdomains
 	  "admins": [ # List of people who get Django error emails.
 	    ["name", "...@govready.com"]
 	  ],

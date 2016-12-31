@@ -1,3 +1,7 @@
+# This is a CloudFoundry mananifest file. Since it is
+# missing required environment variables that are secrets
+# that we cannot store in source control, this is a template
+# for the manifest and not an actual manifest. See deploy.sh.
 memory: 512MB
 instances: 1
 buildpack: python_buildpack

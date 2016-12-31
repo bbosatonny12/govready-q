@@ -40,8 +40,7 @@ data["db"] = dj_database_url.config(conn_max_age=60)
 
 # Fill in Q-specific settings.
 
-data["host"] = VCAP_APPLICATION['application_uris'][0]
-data["organization-parent-domain"] = VCAP_APPLICATION['application_uris'][1].replace("*.", "")
+pass
 
 # Save to where settings.py will see it.
 

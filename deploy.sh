@@ -32,10 +32,9 @@ if [ ! -f /usr/bin/cf ]; then
 	cf -v
 fi
 
-# Install CF "Autopilot", which adds the zero-downtime-push command,
-# if it is not already installed.
-if [ ! -f ~/.cf/plugins/utopilot-linux ]; then
-	cf install-plugin -f https://github.com/contraband/autopilot/releases/download/0.0.2/autopilot-linux
+# Install blue-green-deploy plugin, if it's not already installed.
+if [ ! -f ~/.cf/plugins/blue-green-deploy.linux64 ]; then
+	cf install-plugin blue-green-deploy -r CF-Community
 fi
 
 # Authenticate, if PWS_USER and PWS_PASS are given.
@@ -86,21 +85,20 @@ $PIP download --dest vendor --exists-action i \
 
 # For testing one might just use "cf push" to create or sync
 # the existing app. But that method of deployment is not
-# graceful. So we don't do this.
-# cf push $PWS_APPNAME
+# graceful. So we don't do this except to create the app
+# the first time:
+# cf push $PWS_APPNAME -f manifest-template.yaml
 
-# Run the Autopilot plugin's deployment command, which
-# a) Renames the old app to "...-venerable".
-# b) Deploys our thing to the regular app name.
-# c) Destroys the old app.
-# Because the routes are identical, incoming requests are
-# load balanced during the time both apps are running, and
-# move entirely to the new app once the ...-venerable app
-# is destroyed.
-#
-# TODO: This is doing the same thing as regular push for
-# me and I'm not sure why.
-cf zero-downtime-push $PWS_APPNAME -f manifest.yaml
+# Deploy the update with no downtime by creating a new app,
+# updating routes, and then destroying the old app. In order
+# to preserve the app's environment variables, we have to
+# pull down the current manifest state and store it in
+# manifest.yaml so that blue-green-deploy sees it. This has
+# the extremely unfortunate side effect of storing any
+# secrets in our environment on the local filesystem.
+cf create-app-manifest $PWS_APPNAME -p manifest.yaml
+cf blue-green-deploy $PWS_APPNAME
+rm -f manifest.yaml
 
 # Deauthenticate, if we logged in.
 if [ ! -z "${PWS_USER-}" ]; then
