@@ -34,7 +34,7 @@ fi
 
 # Install blue-green-deploy plugin, if it's not already installed.
 if [ ! -f ~/.cf/plugins/blue-green-deploy.linux64 ]; then
-	cf install-plugin blue-green-deploy -r CF-Community
+	cf install-plugin -f blue-green-deploy -r CF-Community
 fi
 
 # Authenticate, if PWS_USER and PWS_PASS are given.

@@ -2,11 +2,22 @@
 
 Q is an information gathering platform for people, tuned to the specific needs of information security and compliance professionals.
 
-This repository contains scripts for deployment to Pivotal Web Services using Cloud Foundry tools.
+This repository contains documentation and scripts for deployment to Pivotal Web Services (PWS) using Cloud Foundry tools.
 
-# Configuration
+# PWS Services
 
-The Env Variables tab in PWS must be set with some application-specific data in the `ENVIRONMENT_JSON` field. We pass things in via JSON, which if you paste it into the field should lose its newlines to make a really long string (and that's good).
+The PWS space should be configured with:
+
+* Pivotal SSL
+* New Relic
+* User Provided: Papertrail
+* ElephantSQL
+
+# PWS Configuration
+
+The Env Variables tab in PWS must be set with some application-specific data in the `ENVIRONMENT_JSON` field. We pass things into Django via JSON, which if you paste it into the field should lose its newlines to make a really long string (and that's good).
+
+This needs to be done just the first time the app is created in PWS.
 
 You can copy and modify from this, but _delete the comments_ before you paste it into the environment variable field because comments are not vaid JSON:
 
@@ -28,6 +39,8 @@ You can copy and modify from this, but _delete the comments_ before you paste it
 	  "govready_cms_api_auth": ["...username...", "...password..."]
 	}
 
+# Other Configuration
+
 You'll also need to configure Mailgun to send incoming replies to notification emails to an HTTP hook by giving Mailgun a URL on our domain hosted at PWS.
 
 # Performing a Deployment
@@ -36,10 +49,16 @@ To deploy to Pivotal Web Services, run:
 
 	./deploy.sh
 
-This will deploy to the `GovReady` organization `dev` space as the app `govready-q`.
+This will:
 
-The deploy process installs and runs the Cloud Foundry command-line client, it fetches remote vendor resources (which must be fetched locally prior to upload to PWS), and then it activates a zero-downtime deployment which adds a second instance with new source code, causing load-balancing across old and new code, and then removes the old PWS app running the last deployment.
+* Make a fresh clone of the Q source code into `src` (see the script for which branch is used)
+* Installs and configures the Cloud Foundry command-line client (CLI), on first run.
+* Fetches remote vendor resources that are required to build the app container.
+* Pushes everything to the `GovReady` organization `dev` space as the app `govready-q`, first by creating a new app and, on success, swapping the old app and the new app and then killing the routes for the old app.
 
+# Continuous Integration
+
+The `circle.yml` file can be used with CircleCI to execute a deployment (as above) each time this repository is updated, or via a Rebuild on CircleCI. CircleCI should be set up with the environment variables `PWS_USER` and `PWS_PASS` that hold the credentials for Pivotal Web Services.
 
 # Notes
 
