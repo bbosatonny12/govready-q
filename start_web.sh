@@ -30,6 +30,9 @@ fi
 # hash.
 python manage.py collectstatic --noinput
 
+# Check that everything looks OK.
+python manage.py check --deploy
+
 # On instance zero, run send_notification_emails in the background.
 if [ "$CF_INSTANCE_INDEX" == "0" ]; then
 	nohup python manage.py send_notification_emails forever &
