@@ -69,7 +69,7 @@ To tinker around with Python interactively on a running PWS container:
 	# fix somehow incorrect environment
 	HOME=~/app/ . ~/app/.profile.d/python.sh 
 
-	python -V
+	python -V # should be 3.5.2!
 
 
 # Credits / License

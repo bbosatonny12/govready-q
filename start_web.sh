@@ -38,5 +38,14 @@ if [ "$CF_INSTANCE_INDEX" == "0" ]; then
 	nohup python manage.py send_notification_emails forever &
 fi
 
-# Start Django.
-gunicorn siteapp.wsgi --access-logfile -
+# Configure New Relic monitoring by pulling credentials from the
+# VCAP_SERVICES environment variable, which is JSON. Form a
+# New Relic application name using the PWS space name (e.g. "dev")
+# so we can distinguish environments on New Relic.
+export NEW_RELIC_LICENSE_KEY=$(echo $VCAP_SERVICES | jq -r '.newrelic[0].credentials.licenseKey')
+export NEW_RELIC_APP_NAME=govready-q-$(echo $VCAP_APPLICATION | jq -r '.space_name')
+export NEW_RELIC_LOG="stdout"
+echo "New Relic application name: $NEW_RELIC_APP_NAME"
+
+# Start newrelic + gunicorn + Django + our site.
+newrelic-admin run-program gunicorn siteapp.wsgi --access-logfile -
