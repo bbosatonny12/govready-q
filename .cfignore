@@ -1,1 +1,5 @@
 /local
+/cf_requirements.txt
+/circle.yml
+/manifest-template.yaml
+/manifest.yaml
