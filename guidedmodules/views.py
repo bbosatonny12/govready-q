@@ -8,7 +8,7 @@ from django.db import transaction
 from .models import Module, ModuleQuestion, Task, TaskAnswer, TaskAnswerHistory, InstrumentationEvent
 import guidedmodules.module_logic as module_logic
 from discussion.models import Discussion
-from siteapp.models import User, Invitation, Project, ProjectMembership
+from siteapp.models import User, Invitation, Project, Folder, ProjectMembership
 
 @login_required
 def new_task(request):
@@ -425,7 +425,19 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
             "%s question %s %s" % (repr(q.module), q.key, field)
         )
 
+
+    # Get list of folders backwards from projects
+    projects = Project.get_projects_with_read_priv(request.user, request.organization)
+    folders = list(
+        (Folder.objects.filter(projects__in=projects)
+            | Folder.objects.filter(admin_users=request.user))
+          .distinct())
+    # Sort the folders by the sort order alphabetically
+    #folders.sort(key = lambda folder : [title for title in folder.accessible_projects])
+
+
     context.update({
+        "folders": folders,
         "header_col_active": "start" if (len(answered.as_dict()) == 0 and q.spec["type"] == "interstitial") else "questions",
         "q": q,
         "prompt": render_markdown_field("prompt"),
@@ -467,6 +479,17 @@ def task_finished(request, task, answered, context, *unused_args):
     # or the user is returning to the finished page directly later and the task
     # might or might not actually be finished.
 
+
+    # Get list of folders backwards from projects
+    projects = Project.get_projects_with_read_priv(request.user, request.organization)
+    folders = list(
+        (Folder.objects.filter(projects__in=projects)
+            | Folder.objects.filter(admin_users=request.user))
+          .distinct())
+    # Sort the folders by the sort order alphabetically
+    #folders.sort(key = lambda folder : [title for title in folder.accessible_projects])
+
+
     # Add instrumentation event.
     # Has the user been here before?
     i_task_done = InstrumentationEvent.objects\
@@ -490,6 +513,7 @@ def task_finished(request, task, answered, context, *unused_args):
 
     # Construct the page.
     context.update({
+        "folders": folders,
         "had_any_questions": len(set(answered.as_dict()) - answered.was_imputed) > 0,
         "output": task.render_output_documents(answered),
         "context": module_logic.get_question_context(answered, None),

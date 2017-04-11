@@ -60,6 +60,49 @@ def project_list(request):
         "any_have_members_besides_me": ProjectMembership.objects.filter(project__in=projects).exclude(user=request.user),
     })
 
+def project_folder(request, folder_name):
+    # Simulate a folder page by filter project list to match a folder
+    # Get the projects. It handily marks Projects with user_is_admin.
+    projects = Project.get_projects_with_read_priv(request.user, request.organization)
+    # for p in projects:
+    #     p.open_tasks = p.get_open_tasks(request.user) # for the template
+
+    # Collate into folders. Folders are accessible to a user
+    # just when they can see a Project within it, so we go
+    # backwards from Projects to Folders.
+    folders = list(
+        (Folder.objects.filter(projects__in=projects)
+            | Folder.objects.filter(admin_users=request.user))
+          .distinct())
+
+    print("looking for {}".format(folder_name))
+    for folder in folders:
+        # Set an attribute on the Folder with a list of
+        # projects that the user has access to.
+        projects_in_folder = set(folder.projects.all())
+        folder.accessible_projects = [p for p in projects if p in projects_in_folder]
+
+        # Mark folders that the user is an admin of, i.e. can rename it and
+        # see all projects within it.
+        folder.is_admin = (request.user in folder.get_admins())
+
+        # If the user is an admin and there are projects in the folder the
+        # user can't see, mark that too.
+        if folder.is_admin:
+            folder.num_hidden_projects = len(projects_in_folder - set(folder.accessible_projects))
+
+    # Sort the folders by the sort order of the first project
+    # in each folder.
+    # folders.sort(key = lambda folder : [projects.index(p) for p in folder.accessible_projects])
+
+    return render(request, "project_folder.html", {
+        "folder_name": folder_name,
+        "folders": folders,
+        "any_have_members_besides_me": ProjectMembership.objects.filter(project__in=projects).exclude(user=request.user),
+    })
+
+
+
 def add_assessment_catalog_metadata(module):
     from guidedmodules.module_logic import render_content
 
@@ -210,6 +253,15 @@ def assessment_catalog_item(request, module_key):
 def project(request, project_id):
     project = get_object_or_404(Project, id=project_id, organization=request.organization)
 
+    # Get list of folders backwards from projects
+    projects = Project.get_projects_with_read_priv(request.user, request.organization)
+    folders = list(
+        (Folder.objects.filter(projects__in=projects)
+            | Folder.objects.filter(admin_users=request.user))
+          .distinct())
+    # Sort the folders by the sort order alphabetically
+    #folders.sort(key = lambda folder : [title for title in folder.accessible_projects])
+
     # Check authorization.
     if not project.has_read_priv(request.user):
         return HttpResponseForbidden()
@@ -264,7 +316,7 @@ def project(request, project_id):
                 task = module_answers.task
 
                 task_discussions.extend([d for d in discussions if d.attached_to.task == task])
-                
+
                 if not task.has_read_priv(request.user):
                     continue
 
@@ -339,7 +391,7 @@ def project(request, project_id):
                     continue
 
         # If the invitation didn't get put elsewhere, display in the
-        # other list.                
+        # other list.
         other_open_invitations.append(inv)
 
     # Additional tabs of content.
@@ -355,6 +407,7 @@ def project(request, project_id):
 
     # Render.
     return render(request, "project.html", {
+        "folders": folders,
         "is_admin": request.user in project.get_admins(),
         "can_begin_module": can_begin_module,
         "project": project,
@@ -367,6 +420,175 @@ def project(request, project_id):
         "action_buttons": action_buttons,
     })
 
+@login_required
+def dashboard(request, project_id):
+    project = get_object_or_404(Project, id=project_id, organization=request.organization)
+    # Check authorization.
+    if not project.has_read_priv(request.user):
+        return HttpResponseForbidden()
+
+    # Redirect if slug is not canonical. We do this after checking for
+    # read privs so that we don't reveal the task's slug to unpriv'd users.
+    # if request.path != project.get_absolute_url():
+    #     return HttpResponseRedirect(project.get_absolute_url())
+
+    # Get list of folders backwards from projects
+    projects = Project.get_projects_with_read_priv(request.user, request.organization)
+    folders = list(
+        (Folder.objects.filter(projects__in=projects)
+            | Folder.objects.filter(admin_users=request.user))
+          .distinct())
+    # Sort the folders by the sort order alphabetically
+    #folders.sort(key = lambda folder : [title for title in folder.accessible_projects])
+
+    # Get all of the discussions I'm participating in as a guest in this project.
+    # Meaning, I'm not a member, but I still need access to certain tasks and
+    # certain questions within those tasks.
+    discussions = list(project.get_discussions_in_project_as_guest(request.user))
+
+    # Pre-load the answers to project root task questions and impute answers so
+    # that we know which questions are suppressed by imputed values.
+    root_task_answers = project.root_task.get_answers()
+    root_task_answers = root_task_answers.with_extended_info()
+
+    can_begin_module = project.can_start_task(request.user)
+
+    # Create all of the module entries in a tabs & groups data structure.
+    from collections import OrderedDict
+    tabs = OrderedDict()
+    action_buttons = []
+    question_dict = { }
+    first_start = True
+    for mq in project.root_task.module.questions.all().order_by('definition_order'):
+        # Display module/module-set questions only. Other question types in a project
+        # module are not valid.
+        if mq.spec.get("type") not in ("module", "module-set"):
+            continue
+
+        # Skip questions that are imputed.
+        if mq.key in root_task_answers.was_imputed:
+            continue
+
+        # Is this question answered yet? Are there any discussions the user
+        # is a guest of in any of the tasks that answer this question?
+        is_finished = None
+        tasks = []
+        task_discussions = []
+        ans = root_task_answers.as_dict().get(mq.key)
+        if ans is not None:
+            if mq.spec["type"] == "module":
+                # Convert a ModuleAnswers instance to an array containing just itself.
+                ans = [ans]
+            elif mq.spec["type"] == "module-set":
+                # ans is already a list of ModuleAnswers instances.
+                pass
+            for module_answers in ans:
+                task = module_answers.task
+
+                task_discussions.extend([d for d in discussions if d.attached_to.task == task])
+
+                if not task.has_read_priv(request.user):
+                    continue
+
+                tasks.append(task)
+                task.has_write_priv = task.has_write_priv(request.user)
+                if not task.is_finished():
+                    # If any task is unfinished, the whole question
+                    # is marked as unfinished.
+                    is_finished = False
+                elif is_finished is None:
+                    # If all tasks are finished, the whole question
+                    # is marked as finished.
+                    is_finished = True
+
+        # Do not display if the user can't start a task and there are no
+        # tasks visible to the user.
+        if not can_begin_module and len(tasks) == 0 and len(task_discussions) == 0:
+            continue
+
+        # Is this the first Start?
+        d_first_start = first_start and (len(tasks) == 0)
+        if d_first_start: first_start = False
+
+        # Create template context dict.
+        d = {
+            "question": mq,
+            "module": mq.answer_type_module,
+            "is_finished": is_finished,
+            "tasks": tasks,
+            "can_start_new_task": mq.spec["type"] == "module-set" or len(tasks) == 0,
+            "first_start": d_first_start,
+            "discussions": task_discussions,
+            "invitations": [], # filled in below
+        }
+        question_dict[mq.id] = d
+
+        if mq.spec.get("placement", "tabpanel") == "tabpanel":
+            # Create the tab and group for this.
+            tabname = mq.spec.get("tab", "Modules")
+            tab = tabs.setdefault(tabname, {
+                "title": tabname,
+                "unfinished_tasks": 0,
+                "groups": OrderedDict(),
+            })
+            groupname = mq.spec.get("group", "Modules")
+            group = tab["groups"].setdefault(groupname, {
+                "title": groupname,
+                "modules": [],
+            })
+            group["modules"].append(d)
+
+            # Add a flag to the tab if any tasks contained
+            # within it are unfinished.
+            for t in tasks:
+                if not t.is_finished():
+                    tab["unfinished_tasks"] += 1
+
+        elif mq.spec.get("placement") == "action-buttons":
+            action_buttons.append(d)
+
+    # Find any open invitations and if they are for particular modules,
+    # display them with the module.
+    other_open_invitations = []
+    for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created'):
+        if inv.is_expired():
+            continue
+        if inv.target == project:
+            into_new_task_question_id = inv.target_info.get("into_new_task_question_id")
+            if into_new_task_question_id:
+                if into_new_task_question_id in question_dict: # should always be True
+                    question_dict[into_new_task_question_id]["invitations"].append(inv)
+                    continue
+
+        # If the invitation didn't get put elsewhere, display in the
+        # other list.
+        other_open_invitations.append(inv)
+
+    # Additional tabs of content.
+    additional_tabs = []
+    if project.root_task.module.spec.get("output"):
+        for doc in project.root_task.render_output_documents():
+            if doc.get("tab") in tabs:
+                # Assign this to one of the tabs.
+                tabs[doc["tab"]]["intro"] = doc
+            else:
+                # Add tab to end.
+                additional_tabs.append(doc)
+
+    # Render.
+    return render(request, "dashboard.html", {
+        "folders": folders,
+        "is_admin": request.user in project.get_admins(),
+        "can_begin_module": can_begin_module,
+        "project": project,
+        "title": project.title,
+        "intro" : project.root_task.render_field('introduction') if project.root_task.module.spec.get("introduction") else "",
+        "additional_tabs": additional_tabs,
+        "open_invitations": other_open_invitations,
+        "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
+        "tabs": list(tabs.values()),
+        "action_buttons": action_buttons,
+    })
 
 @login_required
 def new_folder(request):
@@ -393,7 +615,6 @@ def rename_folder(request):
     folder.title = request.POST.get("title")
     folder.save()
     return JsonResponse({ "status": "ok" })
-
 
 @login_required
 def delete_folder(request):

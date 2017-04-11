@@ -10,6 +10,7 @@ import uuid
 from .module_logic import ModuleAnswers, render_content, validator
 from siteapp.models import User, Project, ProjectMembership
 
+
 ModulePythonCode = { }
 
 class ModuleSource(models.Model):
@@ -470,7 +471,7 @@ class Task(models.Model):
             return "became the editor of"
         else:
             # invitation.target was initially a Project but upon
-            # being accepted it was rewritten to be this task
+            # being accepted it was rewritten to be this taskget_invitation_verb_inf
             return "began"
 
     def is_invitation_valid(self, invitation):
@@ -531,6 +532,14 @@ class Task(models.Model):
         if self == self.project.root_task:
             return self.project.title
         return self.render_simple_string("instance-name", self.module.title)
+
+    def render_row(self):
+        # Project root tasks derive their rendered row from the project
+        # sub-tasks use template
+        if self == self.project.root_task:
+            return self.project.title
+        row = self.render_simple_string("instance-row", self.module.title)
+        return row.split(";")
 
     def render_invitation_message(self):
         return self.render_simple_string("invitation-message",

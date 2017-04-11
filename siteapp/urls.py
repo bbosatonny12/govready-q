@@ -17,6 +17,11 @@ urlpatterns = [
     url(r'^assessment-catalog$', views.assessment_catalog),
     url(r'^assessment-catalog/(?P<module_key>.*)$', views.assessment_catalog_item),
 
+    # folders
+    url(r"^folders$", views.project_list), # Alias for url(r"^projects$", ...)
+    url(r"^folder/(?P<folder_name>.*)$", views.project_folder),
+    url(r'^dashboard/(\d+)/(?:[\w\-]+)$', views.dashboard), # Possible replacement for project view
+
     # projects
     url(r"^projects$", views.project_list),
     url(r'^projects/(\d+)/__rename$', views.rename_project, name="rename_project"),

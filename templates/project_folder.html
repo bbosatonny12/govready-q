@@ -59,44 +59,94 @@ Home
 <!-- Remove contextbar from top of page -->
 {% block contextbar %}{% endblock %}
 
-<!-- Remove folderlist from left of page -->
-{% block folderlist %}{% endblock %}
-
 {% block body %}
 <div style="float: right; margin-top: 1em">
-  <a id="new-folder" href="#" class="btn btn-default" onclick="new_folder(); return false;"><i class="glyphicon glyphicon-folder-open"></i> New Folder</a>
   <a id="new-assessment" href="/assessment-catalog" class="btn btn-success"><i class="glyphicon glyphicon-list-alt"></i> New Assessment</a>
 </div>
 
-<h1>Project Folders</h1>
+<div id="folder-list" style="min-height: 700px;">
 
+<!-- Filter on folder -->
+{% for folder in folders %}
+{% if folder.title == folder_name %}
+
+<h1>
+  <span class="glyphicon glyphicon-folder-open"></span>
+  <span class="folder_name">{{folder.title}}</span>
+  {% if folder.is_admin %}
+  <span class="action" onclick="rename_folder(this);"><span class="glyphicon glyphicon-pencil"></span></span>
+  {% if folder.accessible_projects|length == 0 %}
+    <span class="action" onclick="delete_folder(this);"><span class="glyphicon glyphicon-remove"></span></span>
+  {% endif %}
+  {% endif %}
+</h1>
 {% if folders|length == 0 %}
   <p>Start by beginning your first assessment.</p>
 {% endif %}
 
-<div id="folder-list">
-
-<!-- List folders -->
-{% for folder in folders %}
 <div class="folder" data-folder-id="{{folder.id}}">
-  <h2>
-    <a href="/folder/{{folder.title}}" style="color:black;">
-      <span class="glyphicon glyphicon-folder-open"></span>
-      <span class="folder_name">{{folder.title}}</span>
-    </a>
-    {% if folder.is_admin %}
-    <span class="action" onclick="rename_folder(this);"><span class="glyphicon glyphicon-pencil"></span></span>
-    {% if folder.accessible_projects|length == 0 %}
-      <span class="action" onclick="delete_folder(this);"><span class="glyphicon glyphicon-remove"></span></span>
-    {% endif %}
-    {% endif %}
-  </h2>
+  
+  {% for project in folder.accessible_projects %}
+  <div class="project" data-project-id="{{project.id}}">
+  <h3>
+  <a href="{{project.get_absolute_url}}">
+    <span class="glyphicon glyphicon-list-alt"></span>
+    <span class="project_title">{{project.title}}</span>
 
+    {# how many open tasks for the user? #}
+    {% with project.open_tasks|length as count %}
+      {% if count > 0 %}
+        <span class="label label-primary">{{count}}</span>
+      {% endif %}
+    {% endwith %}
 
+    {% if project.user_is_admin %}
+      <span class="action" onclick="return rename_project(this);"><span class="glyphicon glyphicon-pencil"></span></span>
+    {% endif %}
+  </a>
+  </h3>
+
+  <div class="row">
+    <div class="col-md-4">
+      {# what kind of project is this #}
+      <div class="small" style="margin-top: .5em">
+        {{project.root_task.module.title}}
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      {% if project and any_have_members_besides_me %}
+      <div class="admins small" style="margin-top: .5em">
+        owners:
+        {% for user in project.get_admins %}
+          {{user}}
+        {% empty %}
+          (none) {# well that's odd #}
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% with snippet=project.render_snippet %}
+        {% if snippet %}
+          <div class="admins small" style="margin-top: .5em">
+            {{project.render_snippet|safe}}
+          </div>
+        {% endif %}
+      {% endwith %}
+    </div>
+  </div>
+
+  </div>
+  {% endfor %}
+
+  {% if folder.is_admin and folder.num_hidden_projects > 0 %}
+  <p><i>There are {{folder.num_hidden_projects}} other assessment{{folder.num_hidden_projects|pluralize}} in this folder that you do not have permission to see.</i></p>
+  {% endif %}
 </div>
+{% endif %}
 {% endfor %}
 
-</div> <!--/folders-->
+</div> <!-- /Filter on folder -->
 
 <div id="new-folder-template" style="display: none">
 <div class="folder" data-folder-id="">

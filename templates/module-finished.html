@@ -4,9 +4,8 @@
 {{m.title}}
 {% endblock %}
 
-{% block breadcrumbs %}
-  {% include "task-breadcrumbs.html" %}
-{% endblock %}
+<!-- Remove contextbar from top of page -->
+{% block contextbar %}{% endblock %}
 
 {% block body %}
 <style> {# repeated in ssp/project.yaml #}
@@ -21,7 +20,18 @@ thead {
 }
 </style>
 
+<!-- overall project title -->
 <div class="row">
+  <div class="col-md-12">
+    <h1 style="font-size: 32px;">
+      <span class="glyphicon glyphicon-folder-open"></span>
+      <span class="folder_name">{{task.project.folder_name}}</span>
+    </h1>
+  </div>
+</div>
+
+<div class="row" style="border-top: 1px solid rgb(220,220,220);padding-top:12px;">
+
 <div class="col-md-2">
   <div id="question-history-context">
     <ul>

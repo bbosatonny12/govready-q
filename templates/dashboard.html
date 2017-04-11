@@ -8,11 +8,6 @@
 {% block head %}
 <style>
 {% include "focus-area-styles.css" %}
-
-body {
-  /*background-color: white;*/
-}
-
 #action-buttons {
   margin: 1em 0;
   text-align: right;
@@ -53,12 +48,12 @@ body {
 }
 
 .task {
-  max-width: 350px;
   margin: auto;
   margin-bottom: 8px;
   padding: 8px;
-  text-align: center;
-  border:1px solid #ccc;
+  text-align: left;
+  /*border:1px solid #ccc;*/
+  background-color: rgb(248,248,248);
 }
   .task:hover {
     background-color: rgb(248,248,248);
@@ -120,10 +115,32 @@ body {
 }
 </style>
 {% endblock %}
-sdffdf
-{% block breadcrumbs %}{% endblock %}
-<!-- Remove contextbar from top of page -->
-{% block contextbar %}{% endblock %}
+
+{% block breadcrumbs %}
+<li>
+  <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
+  {{project.folder_name}}
+</li>
+<li class="active">
+    <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
+  {{project.title}}
+</li>
+{% endblock %}
+
+{% block breadcrumbs_right %}
+<div style="margin-top: -4px">
+{% if not project.is_account_project or project.is_deletable %}
+  <button id="show-project-settings" class="btn btn-sm" onclick="$('#project_settings').modal();">
+    <i class="glyphicon glyphicon-wrench"></i> Assessment Settings</a>
+  </button>
+{% endif %}
+{% if send_invitation.can_add_invitee_to_team %}
+  <button id="show-project-settings" class="btn btn-sm" onclick="invite_user_into_project()">
+    <i class="glyphicon glyphicon-plus"></i> <i class="glyphicon glyphicon-user"></i></a>
+  </button>
+{% endif %}
+</div>
+{% endblock %}
 
 {% block body %}
 
@@ -133,44 +150,109 @@ sdffdf
 </div>
 {% endcomment %}
 
-<!-- overall project title -->
 <div class="row">
-  <div class="col-md-12">
-    <h1 style="font-size: 32px;">
-      <span class="glyphicon glyphicon-folder-open"></span>
-      <span class="folder_name"><a href="/folder/{{project.folder_name}}" style="color:black;">{{project.folder_name}}</a></span>
-    </h1>
-  </div>
-</div>
+<div class="col-md-2">
+    <!-- <div>Dashboard</div> -->
 
-<div class="row" style="border-top: 1px solid rgb(220,220,220);padding-top:12px;">
-
-<div class="col-md-10">
-  <div id="focus-area-wrapper">
-    {# title #}
-    <h3 style="text-align:center; margin-top:-8px;">
-      <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
-      {{project.title}}
-    </h3>
-    {# tabs #}
-
-    <ul id="project-tabs" class="nav nav-tabs">
+    <div id="" style="">
       {# question tabs #}
       {% for tab in tabs %}
-        <li
+        <div class="" style="margin-bottom:12px;">
+        <div 
           class="{% if forloop.first %}active{% endif %}"
-          role="presentation"
-          >
+          role="presentation" 
+          style="font-size:90%;">
+            <span class="glyphicon glyphicon-list-alt"></span>
             <a
               href="#{{tab.title|slugify}}"
               aria-controls="{{forloop.counter}}-{{tab.title|slugify}}"
-              role="tab" data-toggle="tab">
+              role="tab" data-toggle="tab"
+              >
+              <span onclick="$( '#tab-blocks' ).toggle();$( '.tab-contentxx' ).toggle();">
               {{tab.title}}
-              {% if tab.unfinished_tasks > 0 %}
-                <span class="label label-primary">{{tab.unfinished_tasks}}</span>
-              {% endif %}
+            </span>
             </a>
-        </li>
+        </div>
+
+
+
+        </div>
+      {% endfor %}
+    </div>
+
+
+
+
+
+    {# action buttons #}
+    {% if action_buttons %}
+    <div id="action-buttons">
+      {% for rec in action_buttons %}
+        {% for t in rec.tasks %}
+          <a
+            class="btn btn-default" style="background: white"
+            href="{{t.get_absolute_url}}?previous=project">
+            {{rec.question.spec.title}} &raquo; {# use a stable title - dont make it depend on the task #}
+          </a>
+        {% empty %}
+          {% if can_begin_module and rec.can_start_new_task %}
+            <form class="start-task" method="post" action="/tasks/start" style="display:inline;">
+              {% csrf_token %}
+              <input type="hidden" name="project" value="{{project.id}}"/>
+              <input type="hidden" name="question" value="{{rec.question.key}}"/>
+              <input type="hidden" name="previous" value="project"/>
+              <a class="btn btn-default" style="background: white"
+                href="#" onclick="$(this).parent('form').submit(); return false;">
+                {{rec.question.spec.title}} &raquo;
+              </a>
+            </form>
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    </div> <!-- /action-buttons -->
+    {% endif %}
+</div>
+
+<div class="col-md-10">
+  <div id="focus-area-wrapper" style="min-height:600px;">
+    {# tabs #}
+
+    <div id="tab-blocks" style="">
+      {# question tabs #}
+      {% for tab in tabs %}
+      <!--
+        <div class="col-md-4" style="margin-bottom:30px;">
+        <div 
+          class="{% if forloop.first %}active{% endif %}"
+          role="presentation" 
+          style="border: 1px solid #D0D0D0;
+                /*border-top: 4px solid #88A;*/
+                box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
+                padding: 1.5em;
+                background-color: rgb(255, 255, 255);
+                margin-bottom: 24px;
+                height: 160px;
+                text-align:center;
+                position; relative;
+                z-index:1;">
+            <a
+              href="#{{tab.title|slugify}}"
+              aria-controls="{{forloop.counter}}-{{tab.title|slugify}}"
+              role="tab" data-toggle="tab"
+              >
+              <span style="margin: -16px -16px 0 -16px;
+                        padding: 16px;
+                        /*background-color: #88A;*/
+                        color: #444;
+                        font-size: 120%;
+                        font-weight: bold;"
+                        onclick="$( '#tab-blocks' ).toggle();$( '.tab-content' ).toggle();">
+              {{tab.title}}
+            </span>
+            </a>
+        </div>
+        </div>
+      -->
       {% endfor %}
 
       {# output document tabs #}
@@ -182,37 +264,49 @@ sdffdf
           </a>
         </li>
       {% endfor %}
-    </ul>
+    </div>
 
     {# tab content #}
 
-    <div class="tab-content">
+    <div class="tab-content" style="">
       {# question tabs #}
 
       {% for tab in tabs %}
-        <div role="tabpanel" class="tab-pane {% if forloop.first %}active{% endif %}" id="{{tab.title|slugify}}">
+        <div role="tabpanel" class="tab-pane {% if forloop.first %}active{% endif %}" id="{{tab.title|slugify}}"
+             class="col-md-12"
+             style="">
 
-          <div class="tab-intro" style="width: 80%; margin: auto; margin-top:30px;">
+          <!-- <div class="" style="">
+            <a onclick="$( '#tab-blocks' ).toggle();$( '.tab-content' ).toggle();return false;">back to dashboard</a>
+          </div> -->
+            
+          <div class="tab-intro" style="margin: auto; margin-top:30px;">
             {{tab.intro.html|safe}}
           </div>
 
             {% for group in tab.groups.values %}
-            <div class="task-group">
+            <div class="task-group" style="">
               <!-- <div class="task-group-title">{{group.title}}</div> -->
 
               {% for rec in group.modules %}
-                <div id="question-{{rec.question.key}}" class="task {% if rec.is_finished %}task_finished{% endif %} {% if rec.first_start %}first_start{% endif %}">
+                <div id="question-{{rec.question.key}}" class="task {% if rec.is_finished %}task_finished{% endif %} {% if rec.first_start %}first_start{% endif %}" 
+                    style="">
 
                   <div class="task-title">
-                    {{rec.question.spec.title}}
+                    <h4>{{rec.question.spec.title}}</h4>
                   </div>
 
                   <div class="task-body">
+                      <table class="table" style="width: 100%;">
                       {% for t in rec.tasks %}
-                        <div class="task-commands started-task">
+                        <tr>
+                        <!-- <div class="task-commands started-task"> -->
                             {% if rec.question.spec.type == "module-set" %}
-                              {{t.render_title}} &mdash;
+                              {% for f in t.render_row %}
+                               <td> {{f}}</td>
+                              {% endfor %}
                             {% endif %}
+                            <td>
                             <a href="{{t.get_absolute_url}}?previous=project">
                             {% if t.is_finished %}
                               <span style="color: #96B">
@@ -220,13 +314,15 @@ sdffdf
                                 View
                               </span>
                             {% else %}
-                              <span class="label label-primary">in progress</span>
                               <span class="glyphicon glyphicon-edit"></span>
-                              Continue
+                              Pending
                             {% endif %}
                             </a>
-                        </div>
+                          </td>
+                        <!-- </div> -->
+                      </tr>
                       {% endfor %}
+                    </table>
 
                       {% if can_begin_module and rec.can_start_new_task %}
                       <div class="task-commands">
@@ -277,56 +373,10 @@ sdffdf
 
     </div>
   </div>
-</div><!-- /focus-area-wrapper -->
-
-<div class="col-md-2">
-
-{% if not project.is_account_project or project.is_deletable %}
-  <button id="show-project-settings" class="btn btn-sm" onclick="$('#project_settings').modal();">
-    <i class="glyphicon glyphicon-wrench"></i> Assessment Settings</a>
-  </button>
-{% endif %}
-
-{% if send_invitation.can_add_invitee_to_team %}
-  <button id="show-project-settings" class="btn btn-sm" onclick="invite_user_into_project()" style="margin-top:12px;">
-    <i class="glyphicon glyphicon-plus"></i> <i class="glyphicon glyphicon-user"></i></a>
-  </button>
-{% endif %}
-
-
-
-    {# action buttons #}
-    {% if action_buttons %}
-    <div id="action-buttons">
-      {% for rec in action_buttons %}
-        {% for t in rec.tasks %}
-          <a
-            class="btn btn-default" style="background: white"
-            href="{{t.get_absolute_url}}?previous=project">
-            {{rec.question.spec.title}} &raquo; {# use a stable title - dont make it depend on the task #}
-          </a>
-        {% empty %}
-          {% if can_begin_module and rec.can_start_new_task %}
-            <form class="start-task" method="post" action="/tasks/start" style="display:inline;">
-              {% csrf_token %}
-              <input type="hidden" name="project" value="{{project.id}}"/>
-              <input type="hidden" name="question" value="{{rec.question.key}}"/>
-              <input type="hidden" name="previous" value="project"/>
-              <a class="btn btn-default" style="background: white"
-                href="#" onclick="$(this).parent('form').submit(); return false;">
-                {{rec.question.spec.title}} &raquo;
-              </a>
-            </form>
-          {% endif %}
-        {% endfor %}
-      {% endfor %}
-    </div> <!-- /action-buttons -->
-    {% endif %}
 </div>
 
-  </div> 
+  </div> <!-- /focus-area-wrapper -->
 </div> <!-- /col -->
-
 </div> <!-- /row -->
 
 {# SETTINGS MODAL #}
