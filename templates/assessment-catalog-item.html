@@ -26,15 +26,18 @@
 {% endblock %}
 
 {% block body %}
+
+<div class="col-md-10  pull-right"><!-- offset -->
+
 <div class="row">
-  <div class="col-sm-10">
+  <div class="col-sm-9">
     <h1>{{module.title}}</h1>
 
     <div class="body">
       {{module.long_description|safe}}
     </div>
   </div>
-  <div class="col-sm-2">
+  <div class="col-sm-3">
     <div id="start-container">
       <form method="post">
         {% csrf_token %}
@@ -46,5 +49,7 @@
     </div>
   </div>
 </div>
+
+</div><!-- offset -->
 
 {% endblock %}

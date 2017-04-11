@@ -5,8 +5,7 @@
 {{module.title}} - Assessment Catalog
 {% endblock %}
 
-<!-- Remove folderlist from page -->
-{% block folderlist %}{% endblock %}
+
 
 {% block head %}
 <style>
@@ -25,7 +24,13 @@
 <li class="active">{{module.title|truncatewords:6}}</li>
 {% endblock %}
 
+<!-- Remove folderlist from page -->
+{% block folderlist %}{% endblock %}
+
 {% block body %}
+
+<div class="col-md-10  pull-right"><!-- offset -->
+
 <h1>{{module.title}}</h1>
 
 <div class="body">
@@ -39,4 +44,7 @@
       <button id="start-assessment" type="submit" class="btn btn-success">Begin &raquo;</button>
     {% endbuttons %}
 </form>
+
+</div><!-- offset -->
+
 {% endblock %}

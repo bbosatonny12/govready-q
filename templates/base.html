@@ -207,22 +207,6 @@
     </div><!-- div wrapper -->
     {% endblock %}
 
-    {% block folderlist %}
-    <!-- List folders sidebar -->
-    <div class="" style="background-color:rgb(100,100,100);text-align:left; position:absolute;width: 240px; height:100%;border-right:0.5px solid #888; color:white;">
-      <div style="padding:8px;border-bottom:0.5px solid #555;">
-        <a href="/projects" style="color:rgb(230,230,230);">Project Folders</a>
-      </div>
-      {% for folder in folders %}
-         <div class="" style="margin:0; border-bottom:0.5px solid #555;  padding:8px;">
-           <span class="glyphicon glyphicon-folder-close" style="font-size:75%;">
-            <a href="/folder/{{folder.title}}" style="color:rgb(230,230,230);">{{folder.title}}</a></span>
-         </div>
-      {% endfor %}
-    </div>
-    <!-- / List folders sidebar -->
-    {% endblock %}
-
     {% if request.user.user_settings_task and not request.user.user_settings_task.is_finished and not request.suppress_prompt_banner %}
     <div id="please-complete-account-settings" class="container" style="margin-top: 1em;">
         <div class="alert alert-warning">
@@ -244,7 +228,29 @@
     {% endif %}
 
     {% block body-wide %}
-    <div class="container-fluid">
+
+<div class="row">
+        {% block folderlist %}
+    <!-- List folders sidebar -->
+
+    <div class="col-md-2 left-side" style="background-color:rgb(100,100,100);text-align:left; width: 240px; border-right:0.5px solid #888; color:white;
+    margin-bottom: -99999px;
+    padding-bottom: 99999px;
+    ">
+      <div style="padding:8px;border-bottom:0.5px solid #555;">
+        <a href="/projects" style="color:rgb(230,230,230);">Project Folders</a>
+      </div>
+      {% for folder in folders %}
+         <div class="" style="margin:0; border-bottom:0.5px solid #555;  padding:8px;">
+           <span class="glyphicon glyphicon-folder-close" style="font-size:75%;">
+            <a href="/folder/{{folder.title}}" style="color:rgb(230,230,230);">{{folder.title}}</a></span>
+         </div>
+      {% endfor %}
+    </div>
+    <!-- / List folders sidebar -->
+    {% endblock %}
+
+    <div id="primary-content" class="container-fluid col-md-10"><!-- primary-content -->
       <div class="container" style="min-height: 80%; margin-top: 2em;">
       {% block body %}
       {% endblock %}
@@ -270,6 +276,8 @@
       </footer>
     </div> <!-- /container -->
     {% endblock %}
+
+</div><!-- end big row for containers -->
 
 {% include "bootstrap-helpers.html" %}
 

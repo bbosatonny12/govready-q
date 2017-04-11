@@ -63,6 +63,9 @@ Home
 {% block folderlist %}{% endblock %}
 
 {% block body %}
+
+<div id="primary-content" class="col-md-10 pull-right"><!-- primary-content w/o folder list -->
+
 <div style="float: right; margin-top: 1em">
   <a id="new-folder" href="#" class="btn btn-default" onclick="new_folder(); return false;"><i class="glyphicon glyphicon-folder-open"></i> New Folder</a>
   <a id="new-assessment" href="/assessment-catalog" class="btn btn-success"><i class="glyphicon glyphicon-list-alt"></i> New Assessment</a>
@@ -108,6 +111,9 @@ Home
   </h2>
 </div>
 </div>
+
+
+</div><!-- /primary-content w/o folder list -->
 
 {% endblock %}
 
