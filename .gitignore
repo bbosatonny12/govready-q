@@ -73,10 +73,14 @@ target/
 .ipynb_checkpoints
 
 # Local development files
+# These ignores need to be periodically cleaned up
 modules/dev
 modules/ssp
 modules/linked_modules
 modules/oirmfo
+modules/at-small-web
+modules/admintasks
+modules/usccu1
 
 # Local build/test files
 siteapp/staticfiles
