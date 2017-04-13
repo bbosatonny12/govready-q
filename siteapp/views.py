@@ -128,15 +128,15 @@ def add_assessment_catalog_metadata(module):
         "%s %s" % (repr(module), "short description")
     )
 
-    module.org = module.spec.get("org", {}) or "—"
-    module.tech = module.spec.get("tech", {}) or "—"
-    module.role = module.spec.get("role", {}) or "—"
-    module.type = module.spec.get("type", {}) or "—"
-    module.access = module.spec.get("access", {}) or "—"
-    module.source_url = module.spec.get("source_url", {}) or "—"
-    module.version = module.spec.get("version", {}) or "—"
-    module.status = module.spec.get("status", {})  or "—"
-    module.provider = module.spec.get("provider", {})  or "—"
+    module.org = module.spec.get("org", {}) or ""
+    module.tech = module.spec.get("tech", {}) or ""
+    module.role = module.spec.get("role", {}) or ""
+    module.type = module.spec.get("type", {}) or ""
+    module.access = module.spec.get("access", {}) or ""
+    module.source_url = module.spec.get("source_url", {}) or ""
+    module.version = module.spec.get("version", {}) or ""
+    module.status = module.spec.get("status", {})  or ""
+    module.provider = module.spec.get("provider", {})  or ""
     module.provider_url = module.spec.get("provider_url", {})
     # module.title = module.spec.get("title", {})
 
