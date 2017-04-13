@@ -145,9 +145,9 @@ sdffdf
 
 <div class="row" style="border-top: 1px solid rgb(220,220,220);padding-top:12px;">
 
-<div class="col-md-10">
+<div class="col-md-10" style="margin-top:20px;">
       {# title #}
-    <h3 style="text-align:center; margin-top:-8px;">
+    <h3 style="text-align:left; margin-top:-8px; color: rgb(126, 126, 126);">
       <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
       {{project.title}}
     </h3>
@@ -279,7 +279,7 @@ sdffdf
   </div>
 </div><!-- /focus-area-wrapper -->
 
-<div class="col-md-2" style="margin-top: 40px;">
+<div class="col-md-2" style="margin-top: 60px;">
 
 {% if not project.is_account_project or project.is_deletable %}
   <button id="show-project-settings" class="btn btn-sm" onclick="$('#project_settings').modal();">
