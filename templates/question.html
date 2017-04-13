@@ -55,19 +55,16 @@ label:hover .onhover { display: inline; }
 }
 </style>
 
-<!-- overall project title -->
-<div class="row">
+<div id="task-project-title" class="row">
   <div class="col-md-12">
     <h1 style="font-size: 32px;">
       <span class="glyphicon glyphicon-folder-open"></span>
       <span class="folder_name"><a href="/folder/{{task.project.folder_name}}" style="color:black;">{{task.project.folder_name}}</a></span>
     </h1>
   </div>
-</div>
+</div><!-- task-project-title"  -->
 
-<div class="row" style="border-top: 1px solid rgb(220,220,220);padding-top:12px;">
-
-<div class="row">
+<div id="task-meta-comment" class="row" style="border-top: 1px solid rgb(220,220,220);padding-top:12px;">
   <div class="col-md-push-2 col-md-8">
     {% comment %}
     {% if previous_page_type == "project" or previous_page_type == "nquestion" %}
@@ -79,30 +76,15 @@ label:hover .onhover { display: inline; }
 
     {% include "task-header.html" with col_width="4" col_active=header_col_active %}
   </div>
-</div>
+</div><!-- #task-meta-comment -->
 
-<div class="row">
-<div class="col-md-3 hidden-xs hidden-sm">
-  <div id="question-history-context" style="border:0px solid black; ; height:600px; overflow-y:scroll; padding:4px;">
-      <ul>
-      {% if context %}
-        <p>Progress:</p>
-        {% include "task-progress-question-list.html" with previous="question" %}
-        <div style="font-size: 10px; line-height: 120%; padding-left: 2em; color: #222;">
-        <li>&middot;</li>
-        <li>&middot;</li>
-        <li>&middot;</li>
-        </div>
-        <li>
-          ...and we&rsquo;re done
-        </li>
-      {% endif %}
-      </ul>
-
-    </div> <!-- /question-history-context -->
-</div>
-
-<div class="col-md-9">
+<div id="task-row" class="row">
+<div id="task-question-col" class="col-md-9" style="padding-left:30px;">
+  {# title #}
+  <h3 style="text-align:center; margin-top:-8px;">
+    <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
+    {{task.project.title}}
+  </h3>
   <div id="focus-area-wrapper">
 
     {% if source_invitation %}
@@ -451,16 +433,35 @@ label:hover .onhover { display: inline; }
           </div>
         {% endif %}
 
-
-
-    </div> <!-- /question -->
+    </div> <!-- question -->
 
     {% include "discussion/discussion.html" %}
 
-  </div> <!-- /col -->
-</div> <!-- /row -->
+  </div> <!-- focus-area -->
+</div> <!-- #task-question-col -->
 
-{% endblock %}
+<div id="task-progress-col" class="col-md-3 hidden-xs hidden-sm hidden-md">
+  <div id="question-history-context" 
+       style="height:100vh; overflow-y:scroll; padding:0px 4px 4px 4px; margin-top:40px;">
+      <ul>
+      {% if context %}
+        {% include "task-progress-question-list.html" with previous="question" %}
+        <div style="font-size: 10px; line-height: 120%; padding-left: 2em; color: #222;">
+        <li>&middot;</li>
+        <li>&middot;</li>
+        <li>&middot;</li>
+        </div>
+        <li>
+          ...and we&rsquo;re done
+        </li>
+      {% endif %}
+      </ul>
+
+    </div> <!-- /question-history-context -->
+</div><!-- #task-progress-col -->
+
+</div><!-- #task-row -->
+{% endblock %}{# block body #}
 
 {% block scripts %}
 {% include "task-question-debug-links.html" %}
@@ -760,4 +761,4 @@ function record_interaction() {
   sent_first_interaction = true;
 }
 </script>
-{% endblock %}
+{% endblock %}{# block scripts #}

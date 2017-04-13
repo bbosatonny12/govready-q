@@ -115,6 +115,7 @@
               <ul class="dropdown-menu">
                 <li><a href="/">Home</a></li>
                 <li><a href="/projects">Project Folders</a></li>
+                <li><a href="/assessment-catalog">App Store</a></li>
                 {% if user.can_see_org_settings or user.is_staff %}
                   <li role="separator" class="divider"></li>
                 {% endif %}
@@ -191,93 +192,79 @@
     </nav>
 
     {% block contextbar %}
-    <div id="context-bar">
-    <div class="container">
+      <div id="context-bar">
+        <div class="container">
 
-    <div style="float: right; margin: 0 .5em;">
-      {% block breadcrumbs_right %}
-      {% endblock %}
-    </div>
+          <div style="float: right; margin: 0 .5em;">
+            {% block breadcrumbs_right %}
+            {% endblock %}
+          </div>
 
-    <ol class="breadcrumb">
-      {% block breadcrumbs %}
-      {% endblock %}
-    </ol> <!-- .breadcrumb -->
-    </div><!-- container -->
-    </div><!-- div wrapper -->
+          <ol class="breadcrumb">
+            {% block breadcrumbs %}
+            {% endblock %}
+          </ol> <!-- .breadcrumb -->
+        </div><!-- container -->
+      </div><!-- context-bar -->
     {% endblock %}
-
-    {% if request.user.user_settings_task and not request.user.user_settings_task.is_finished and not request.suppress_prompt_banner %}
-    <div id="please-complete-account-settings" class="container" style="margin-top: 1em;">
-        <div class="alert alert-warning">
-          Please complete <a href="{{request.user.user_settings_task.get_absolute_url}}">your account settings</a>.
-        </div>
-    </div>
-    {% endif %}
-
-    {% if messages %}
-    <div class="container" style="margin-top: 1em;">
-      {% for message in messages %}
-        {# Django levels are: debug (map to Boostrap 'info'), info, success, warning, error (map to Boostrap 'danger') #}
-        <div class="alert fade in alert-{% if message.level_tag == "error" %}danger{% elif message.level_tag == "debug" %}info{% else %}{{message.level_tag}}{% endif %}">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            {{ message }}
-        </div>
-      {% endfor %}
-    </div>
-    {% endif %}
 
     {% block body-wide %}
 
-<div class="row">
+    <div class="row">
+
+      {% if request.user.user_settings_task and not request.user.user_settings_task.is_finished and not request.suppress_prompt_banner %}
+        <div id="please-complete-account-settings" class="container" style="margin-top: 1em;">
+            <div class="alert alert-warning">
+              Please complete <a href="{{request.user.user_settings_task.get_absolute_url}}">your account settings</a>.
+            </div>
+        </div>
+      {% endif %}
+
+      {% if messages %}
+      <div class="container" style="margin-top: 1em;">
+        {% for message in messages %}
+          {# Django levels are: debug (map to Boostrap 'info'), info, success, warning, error (map to Boostrap 'danger') #}
+          <div class="alert fade in alert-{% if message.level_tag == "error" %}danger{% elif message.level_tag == "debug" %}info{% else %}{{message.level_tag}}{% endif %}">
+              <button type="button" class="close" data-dismiss="alert">&times;</button>
+              {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {# folder-list-left is col-md-2 #}
         {% block folderlist %}
-    <!-- List folders sidebar -->
+          {% include "folder-list-left.html" %}
+        {% endblock %}
 
-    <div class="col-md-2 left-side" style="background-color:rgb(100,100,100);text-align:left; width: 240px; border-right:0.5px solid #888; color:white;
-    margin-bottom: -99999px;
-    padding-bottom: 99999px;
-    ">
-      <div style="padding:8px;border-bottom:0.5px solid #555;">
-        <a href="/projects" style="color:rgb(230,230,230);">Project Folders</a>
-      </div>
-      {% for folder in folders %}
-         <div class="" style="margin:0; border-bottom:0.5px solid #555;  padding:8px;">
-           <span class="glyphicon glyphicon-folder-close" style="font-size:75%;">
-            <a href="/folder/{{folder.title}}" style="color:rgb(230,230,230);">{{folder.title}}</a></span>
-         </div>
-      {% endfor %}
-    </div>
-    <!-- / List folders sidebar -->
-    {% endblock %}
+      <div id="primary-content" class="container-fluid col-md-10"><!-- primary-content -->
+        <div class="container" style="min-height: 80%; margin-top: 2em;">
+          {% block body %}
+          {% endblock %}
 
-    <div id="primary-content" class="container-fluid col-md-10"><!-- primary-content -->
-      <div class="container" style="min-height: 80%; margin-top: 2em;">
-      {% block body %}
-      {% endblock %}
+          {% block content %}
+            {# allauth uses this block #}
+          {% endblock %}
+        </div>
 
-      {% block content %}
-        {# allauth uses this block #}
-      {% endblock %}
-      </div>
+      </div> <!-- primary-content -->
 
-      <!-- <hr> -->
-      <footer>
-        <div class="container">
-          <div class="row">
-            <div class="col-sm-12">
-              <hr>
-              <div class="row">
-                <div class="col-sm-4"><p class="pull-left">&copy; GovReady {% now "Y" %}</p></div>
-                <div class="col-sm-4"><img alt="GovReady Q logo" src="{% static "img/brand/govready_logo_transparent.png" %}" width="110px;"></div>
-                <div class="col-sm-4"><p class="pull-right">&nbsp;</p></div>
+        <!-- <hr> -->
+        <footer>
+          <div class="container">
+            <div class="row">
+              <div class="col-sm-10 col-sm-push-1">
+                <hr>
+                <div class="row">
+                  <div class="col-sm-4"><p class="pull-left">&copy; GovReady {% now "Y" %}</p></div>
+                  <div class="col-sm-4"><img alt="GovReady Q logo" src="{% static "img/brand/govready_logo_transparent.png" %}" width="110px;"></div>
+                  <div class="col-sm-4"><p class="pull-right">&nbsp;</p></div>
+              </div>
             </div>
           </div>
-        </div>
-      </footer>
-    </div> <!-- /container -->
-    {% endblock %}
+        </footer>
+    {% endblock %}{# /block body-wide #}
 
-</div><!-- end big row for containers -->
 
 {% include "bootstrap-helpers.html" %}
 

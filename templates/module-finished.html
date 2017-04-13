@@ -32,15 +32,13 @@ thead {
 
 <div class="row" style="border-top: 1px solid rgb(220,220,220);padding-top:12px;">
 
-<div class="col-md-2">
-  <div id="question-history-context">
-    <ul>
-      {% include "task-progress-question-list.html" with previous="task-finished" %}
-    </ul>
-  </div> <!-- /question-history-context -->
-</div>
-
 <div class="col-md-10">
+  {# title #}
+  <h3 style="text-align:center; margin-top:-8px;">
+    <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
+    {{task.project.title}}
+  </h3>
+
   <div id="focus-area-wrapper">
 
     {% include "task-header.html" with col_width="4" col_active="review" %}
@@ -125,8 +123,17 @@ thead {
   {% endwith %}
 </div> <!-- / continue panel -->
 </div> <!-- /col -->
+
+
 </div> <!-- /row -->
 
+<div class="col-md-2" style="margin-top: 20px;">
+  <div id="question-history-context">
+    <ul>
+      {% include "task-progress-question-list.html" with previous="task-finished" %}
+    </ul>
+  </div> <!-- /question-history-context -->
+</div>
 {% endblock %}
 
 {% block scripts %}

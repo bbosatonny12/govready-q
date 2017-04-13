@@ -1,0 +1,28 @@
+<!-- List folders sidebar -->
+<div class="col-md-2 left-side hidden-xs hidden-sm hidden-md" 
+    style="background-color:rgb(246,246,246);
+          text-align:left; width: 240px; 
+          color:rgb(106,106,106);
+          padding:0px;
+          border-right: 1px solid rgb(202, 202, 202);
+          height: 115vh;
+          ">
+  <div style="padding:8px;padding: 20px 0px 10px 34px; border-bottom:1px solid rgb(202, 202, 202);">
+    <a href="/assessment-catalog" style="color:rgb(86,86,86);">Add Apps to projects &raquo;</a>
+  </div>
+
+  <div style="padding:8px;padding: 10px 0px 10px 34px; border-bottom:0px solid #555;">
+    <a href="/projects" style="color:rgb(86,86,86);">Project Folders</a>
+  </div>
+  {% for folder in folders %}
+    <div style="display:box; padding:8px 8px 4px 16px; color:rgb(106,106,106);padding-left: 40px;">
+      <div style="font-size:80%; float:left; display:inline-box; width:20px;border:0px solid black; color:rgb(136, 136, 136)" 
+           class="glyphicon glyphicon-folder-open"></div>
+      <div style="font-size:80%; display:inline-box; float:left; width:160px;padding-bottom:4px;">
+        <a href="/folder/{{folder.title}}" style="color:rgb(106, 106, 106);">{{folder.title}}</a>
+      </div>
+      <div style="clear:left; "></div>
+    </div>
+  {% endfor %}
+</div>
+<!-- / List folders sidebar -->
