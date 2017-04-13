@@ -16,7 +16,8 @@ Assessment Catalog
   padding: 1.5em;
   background-color: white;
   margin-bottom: 24px;
-  height: 210px;
+  height: 240px;
+  cursor: pointer;
 }
   .assessment h2 {
     margin: -16px -16px 0 -16px;
@@ -37,18 +38,24 @@ Assessment Catalog
   font-weight: bold;
   font-size: 125%;
 }
+.app-metadata {
+  font-size: 0.9em;
+  text-align: left;
+}
 </style>
 {% endblock %}
 
 {% block breadcrumbs %}
-<li class="active">Assessment Catalog</li>
+<li class="active">Compliance App Store</li>
 {% endblock %}
 
 {% block body %}
 
-<div class="col-md-10  pull-right"><!-- offset -->
+<div id="primary-content" class="col-md-10 pull-right"><!-- primary-content w/o folder list -->
 
-<h1>Assessment Catalog</h1>
+
+<h1><img alt="GovReady Q logo" src="/static/img/brand/govready_logo_transparent.png" width="190px" style="margin-top:-18.5px;"> Compliance App Store</h1>
+
 
 <div class="row">
   {% for module in project_modules %}
@@ -56,12 +63,11 @@ Assessment Catalog
       <div class="assessment"
         data-assessment="{{module.key}}"
         onclick="window.location='/assessment-catalog/{{module.key|urlencode}}'"">
-        <h2>{{module.title}}</h2>
+        <h2><small>{{module.provider}}</small><br/>{{module.title}}</h2>
         <div class="body">
           {{module.short_description|safe}}
         </div>
-        <a class="btn btn-success" href="/assessment-catalog/{{module.key}}"
-          >View &raquo;</a>
+        <div class="app-metadata pull-right">{{module.status}} v{{module.version}}</div>
       </div>
     </div>
 
@@ -73,6 +79,6 @@ Assessment Catalog
   {% endfor %}
 </div>
 
-</div><!-- offset -->
+</div><!-- /primary-content w/o folder list -->
 
 {% endblock %}
