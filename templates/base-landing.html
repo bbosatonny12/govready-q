@@ -2,9 +2,8 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
         <title>{% block title %}{% block head_title %}{% endblock %}{% endblock %} - GovReady Q</title>
 
@@ -41,7 +40,6 @@
                 font-weight: normal;
             }
         </style>
-        <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap-theme.min.css" %}">
         <link rel="stylesheet" href="{% static "vendor/fontawesome/css/font-awesome.min.css" %}">
 
         {% block head %}{% endblock %}
@@ -74,6 +72,7 @@
         {% include "bootstrap-helpers.html" %}
 
         <script src="{% static "vendor/jquery.js" %}"></script>
+        <script src="{% static "vendor/popper.js" %}"></script>
         <script src="{% static "vendor/bootstrap/js/bootstrap.min.js" %}"></script>
 
         <script src="{% static "js/main.js" %}"></script>

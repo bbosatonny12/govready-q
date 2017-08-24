@@ -14,14 +14,16 @@ mkdir -p $VENDOR
 
 # jQuery (MIT License)
 wget -O $VENDOR/jquery.js \
-        https://code.jquery.com/jquery-3.1.1.min.js
+        https://code.jquery.com/jquery-3.2.1.min.js
+
+# Popper (MIT License), required by Bootstrap 4
+wget -O $VENDOR/popper.js \
+        https://raw.githubusercontent.com/FezVrasta/popper.js/v1.12.3/dist/umd/popper.min.js
 
 # Bootstrap (MIT License)
 wget -O /tmp/bootstrap.zip \
-        https://github.com/twbs/bootstrap/releases/download/v3.3.7/bootstrap-3.3.7-dist.zip
-unzip -d /tmp /tmp/bootstrap.zip
-mv /tmp/bootstrap-3.3.7-dist $VENDOR/bootstrap
-rm -f /tmp/bootstrap.zip
+        https://github.com/twbs/bootstrap/releases/download/v4.0.0-beta/bootstrap-4.0.0-beta-dist.zip
+unzip -d $VENDOR/bootstrap /tmp/bootstrap.zip
 
 # Font Awesome (for the spinner on ajax calls; MIT License)
 wget -O /tmp/fontawesome.zip \

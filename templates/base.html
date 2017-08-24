@@ -5,9 +5,8 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
         <title>{% block title %}{% block head_title %}{% endblock %}{% endblock %} - {% firstof request.organization.name request.get_host %} on GovReady Q</title>
 
@@ -20,7 +19,6 @@
         <link rel="stylesheet" href="{% static "vendor/google-fonts.css" %}">
         <style>
             body {
-                padding-top: 50px !important; /* the !important is to fix a bug with the dashboard integration, remove it eventually */
                 padding-bottom: 20px;
                 overflow-y: scroll;
                 font-family: 'Hind', sans-serif;
@@ -73,7 +71,6 @@
               padding: 1px 3px;
             }
         </style>
-        <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap-theme.min.css" %}">
         <link rel="stylesheet" href="{% static "vendor/fontawesome/css/font-awesome.min.css" %}">
 
         {% block head %}{% endblock %}
@@ -87,16 +84,9 @@
     <!--[if lt IE 8]><p>Internet Explorer version 8 or any modern web browser is required to use this website, sorry.<![endif]-->
     <!--[if gt IE 7]><!-->
 
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-target" aria-expanded="false">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="/" style="color: #EEE; font-weight: bold;">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="/">
               {% if request.organization  %}
                 {% with logo=request.organization.get_logo %}
                   {% if logo %}
@@ -109,39 +99,36 @@
               {% else %}
                 {{request.get_host}}
               {% endif %}
-          </a>
-        </div>
-        <div id="navbar-collapse-target" class="collapse navbar-collapse">
-          {% comment %}
-          <ul class="nav navbar-nav">
-            <li class="active"><a href="/">System Catalog</a></li>
-          </ul>
-          {% endcomment %}
-          <ul class="nav navbar-nav navbar-right">
-            {% if request.user.is_authenticated %}
-            <li class="dropdown">
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+      <div class="collapse navbar-collapse ml-5" id="navbarSupportedContent">
+        <ul class="navbar-nav">
+            {% if request.user.is_authenticated %}
+            <li class="nav-item dropdown">
+
+              <a href="#" class="nav-link dropdown-toggle" id="navbarDropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 MENU
-                <span class="caret"></span>
               </a>
-              <ul class="dropdown-menu">
-                <li><a href="/projects">Project Folders</a></li>
-                <li><a href="/store">Compliance Apps</a></li>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenu">
+                <a class="dropdown-item" href="/projects">Project Folders</a>
+                <a class="dropdown-item" href="/store">Compliance Apps</a>
                 {% if user.can_see_org_settings or user.is_staff %}
-                  <li role="separator" class="divider"></li>
+                  <div class="dropdown-divider"></div>
                 {% endif %}
                 {% if user.can_see_org_settings %}
-                  <li><a href="{{request.organization.get_organization_project.get_absolute_url}}">Organization Settings</a></li>
+                  <a class="dropdown-item" href="{{request.organization.get_organization_project.get_absolute_url}}">Organization Settings</a>
                 {% endif %}
                 {% if user.is_staff %}
-                  <li><a href="{% url "guidedmodules_analytics" %}">Analytics</a></li>
+                  <a class="dropdown-item" href="{% url "guidedmodules_analytics" %}">Analytics</a>
                 {% endif %}
               </ul>
             </li>
 
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" id="navbarDropdownUser" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 {% with picture=request.user.get_profile_picture %}
                   {% if picture %}
                     <img src="{{picture.url}}" height="30" alt="Profile Picture"
@@ -149,23 +136,24 @@
                   {% endif %}
                 {% endwith %}
                 {{request.user}}
-                <span class="caret"></span>
               </a>
-              <ul class="dropdown-menu">
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdownUser">
                 {% if user.user_settings_task %}
-                  <li><a href="{{user.user_settings_task.get_absolute_url}}">Account Settings</a></li>
+                  <a class="dropdown-item"  href="{{user.user_settings_task.get_absolute_url}}">Account Settings</a>
                 {% endif %}
-                <li><a href="/api-keys">Your API Keys</a></li>
-                <li role="separator" class="divider"></li>
-                <li><a href="{% url "account_logout" %}">Log Out</a></li>
+                <a class="dropdown-item" href="/api-keys">Your API Keys</a>
+                  <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="{% url "account_logout" %}">Log Out</a>
               </ul>
             </li>
 
             {% notifications_unread as unread_count %}
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="badge">{{ unread_count }}</span> <span class="caret"></span></a>
-              <ul class="dropdown-menu">
-                <li>
+            <li class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" id="navbarDropdownNotifs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="badge">{{ unread_count }}</span>
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdownNotifs">
+                <li class="dropdown-item">
                     <div style="display: block; padding: 3px 20px; clear: both; font-weight: 400; line-height: 1.42857143; white-space: nowrap;"> {# copied bootstrap's .dropdown-menu>li>a styles so we can have an drop-down entry that isn't a link #}
                         <div style="font-size: 90%; text-align: right; color: #444;">
                             {% if request.user.notifications.all.count > 0 %}
@@ -183,7 +171,7 @@
                 </li>
 
                 {% for n in request.user.notifications.all|slice:":5" %}
-                  <li class="notification {% if n.unread %}unread{% endif %}" data-notification-id="{{n.id}}">
+                  <li class="dropdown-item notification {% if n.unread %}unread{% endif %}" data-notification-id="{{n.id}}">
                     {# the link has an onclick handler that cancels the click, runs ajax to mark the notification as read, and then on the ajax callback redirects to the target url #}
                     <a
                         href="{% if n.target and not n.target.supress_link_from_notifications %}{{n.target|get_notification_link:n}}{% else %}javascript:false;{% endif %}"
@@ -197,11 +185,11 @@
             </li>
 
             {% else %}
-            <li><a href="{% url "account_login" %}">Log In</a></li>
+            <a class="nav-item nav-link" href="{% url "account_login" %}">Log In</a>
             {% endif %}
           </ul>          
-        </div><!-- /.navbar-collapse -->
-      </div><!-- /.container-fluid -->
+      </div>
+      </div>
     </nav>
 
     {% block contextbar %}
@@ -312,6 +300,7 @@
 </div>
 
         <script src="{% static "vendor/jquery.js" %}"></script>
+        <script src="{% static "vendor/popper.js" %}"></script>
         <script src="{% static "vendor/bootstrap/js/bootstrap.min.js" %}"></script>
         <script src="{% static "vendor/bootstrap-responsive-tabs.js" %}"></script>
         <script src="{% static "vendor/autosize.min.js" %}"> </script>
