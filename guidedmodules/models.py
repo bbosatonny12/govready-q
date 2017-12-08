@@ -456,14 +456,7 @@ class Task(models.Model):
             # an asset.
             raise ValueError(asset_path + " is not an asset.")
         with self.module.assets.get(asset_path) as f:
-            from PIL import Image
-            from io import BytesIO
-            import base64
-            im = Image.open(f)
-            im.thumbnail((max_image_size, max_image_size))
-            buf = BytesIO()
-            im.save(buf, "PNG")
-            return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
+            return image_to_dataurl(f, max_image_size)
 
 
     # ANSWERS
@@ -763,10 +756,10 @@ class Task(models.Model):
             additional_context=additional_context
         )
 
-    def render_output_documents(self, answers=None):
+    def render_output_documents(self, answers=None, use_data_urls=False):
         if answers is None:
             answers = self.get_answers()
-        return answers.render_output({})
+        return answers.render_output({}, use_data_urls=use_data_urls)
 
     def render_snippet(self):
         snippet = self.module.spec.get("snippet")
@@ -1548,6 +1541,7 @@ class TaskAnswerHistory(models.Model):
             if self.thumbnail:
                 # If we have a thumbnail, indicate so by returning a URL to it.
                 thumbnail_url = url + "?thumbnail=1"
+                thumbnail_dataurl = image_to_dataurl(self.thumbnail, 800)
 
             return {
                 "url": url,
@@ -1555,6 +1549,7 @@ class TaskAnswerHistory(models.Model):
                 "type": sf.mime_type,
                 "type_display": file_type,
                 "thumbnail_url": thumbnail_url,
+                "thumbnail_dataurl": thumbnail_dataurl,
             }
         
         # For all other question types, the value is stored in the stored_value
@@ -1789,3 +1784,13 @@ class InstrumentationEvent(models.Model):
             ('project', 'event_type', 'event_time'),
             ('module', 'event_type', 'event_time'),
         ]
+
+def image_to_dataurl(f, max_image_size):
+    from PIL import Image
+    from io import BytesIO
+    import base64
+    im = Image.open(f)
+    im.thumbnail((max_image_size, max_image_size))
+    buf = BytesIO()
+    im.save(buf, "PNG")
+    return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
