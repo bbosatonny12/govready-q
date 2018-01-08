@@ -82,7 +82,8 @@ modules/oirmfo
 siteapp/staticfiles
 vendor
 .kitchen
-VERSION
+# nightly build wants VERISON file
+# VERSION
 
 # Emacs
 *~

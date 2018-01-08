@@ -51,7 +51,8 @@ echo
 
 # Build the image.
 docker image build --tag govready/govready-q:${TAG-latest} .
-rm -f VERSION # it's for Docker only
+# nightly build wants VERISON file
+# rm -f VERSION # it's for Docker only
 
 # Show warning again.
 if [ $WARNINGS -gt 0 ]; then
